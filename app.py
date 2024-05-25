@@ -1,41 +1,53 @@
+import plotly.express as px
 import pandas as pd
 from shiny import App, ui, render
 from shinywidgets import render_widget
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+from iertools.read import read_epw
+from dateutil.parser import parse 
+import configparser
 
-# Datos de ejemplo (puedes reemplazar esto con tus propios datos)
-data = {
-    "tiempo": [],
-    "temperatura": [],
-    "mes": [],
-    "place": []
+# Leer la configuración desde un archivo INI
+config = configparser.ConfigParser()
+config.read("lugares.ini")
+lugares = config.sections()
+
+ruta = './data/Casablanca.epw'
+dia = "15"
+# read_epw(ruta) #Visualiza el documento que tiene la ruta
+
+
+def cargar_caracteristicas(lugar):
+    lugar_config = config[lugar]
+    return {
+        "lat": lugar_config.getfloat('lat'),
+        "lon": lugar_config.getfloat('lon'),
+        "epw": lugar_config['f_epw']
+    }
+
+
+meses_dict = {
+    "Enero": "01",
+    "Febrero": "02",
+    "Marzo": "03",
+    "Abril": "04",
+    "Mayo": "05",
+    "Junio": "06",
+    "Julio": "07",
+    "Agosto": "08",
+    "Septiembre": "09",
+    "Octubre": "10",
+    "Noviembre": "11",
+    "Diciembre": "12",
 }
 
-# Definir los tiempos comunes a todos los meses
-tiempos_comunes = [24, 6, 12, 18, 24]
+def carga_epw(ruta_epw):
+    epw = read_epw(ruta_epw, alias=True, year=2024)
+    return epw
 
-# Definir los meses y lugares
-meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo']
-lugares = ['Acapulco Gro.', 'Aguascalientes, Ags.', 'Veracruz, Ver.', 'Temixco, Mor.', 'Bogotá, Colombia']
 
-# Generar datos para cada mes y lugar
-for mes in meses:
-    for lugar in lugares:
-        # Generar temperaturas aleatorias para cada tiempo común
-        for tiempo in tiempos_comunes:
-            # Agregar temperatura y tiempo
-            data["tiempo"].append(tiempo)
-            data["temperatura"].append(np.random.randint(20, 35))  # Temperatura aleatoria entre 20 y 35 grados
-            data["mes"].append(mes)
-            data["place"].append(lugar)
-
-df = pd.DataFrame(data)
-
-print(df)
-
-# Definir la interfaz de usuario
 app_ui = ui.page_fluid(
     ui.panel_title("Ener-Habitat Phy"),
     ui.layout_sidebar(
@@ -43,50 +55,60 @@ app_ui = ui.page_fluid(
             ui.input_select(
                 "place",
                 "Lugar:",
-                choices=["Acapulco Gro.", "Aguascalientes, Ags.", "Veracruz, Ver.", "Temixco, Mor.", "Bogotá, Colombia",
-                         "Buenos Aires, Argentina"]
+                choices= lugares
             ),
             ui.input_selectize(
                 "periodo",
                 "Periodo:",
-                choices=["Anual", "Enero", "Febrero", "Marzo", "Abril", "Mayo",
-                         "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+                choices=list(meses_dict.keys())
             ),
             ui.input_select(
-                "conditional",
+                "Conditional",
                 "Condición:",
                 choices=["Sin aire acondicionado", "Con aire acondicionado"]
             )
         ),
         ui.panel_main(
-            ui.output_plot("line_plot")
+            ui.output_plot("grafica_mes"),
+            ui.output_text("caracteristicas")
         )
     )
 )
 
-# Definir la lógica del servidor
+
 def server(input, output, session):
     @output
     @render.plot
-    def line_plot():
-        selected_place = input.place()
-        selected_period = input.periodo()
-        filtered_df = df[df['place'] == selected_place]
+    def grafica_mes():
+        epw = read_epw(ruta, year=2024, alias=True)
+        mes = meses_dict[input.periodo()]
+        fig, ax = plt.subplots(2, figsize=(10, 3), sharex=True)
+        f1 = parse(f"2024-{mes}-{dia}")
+        f2 = f1 + pd.Timedelta("7D")
 
-        if selected_period != "Anual":
-            filtered_df = filtered_df[filtered_df['mes'] == selected_period]
+        ax[0].plot(epw.To, label="Ta")
+        ax[1].plot(epw.Ig, label="Ig")
+        ax[1].plot(epw.Ib, label="Ib")
+        ax[1].plot(epw.Id, label="Id")
 
-        # Crear el gráfico de barras
-        plt.figure()
-        ax = sns.barplot(data=filtered_df, x="tiempo", y="temperatura")
-        ax.set_title(f"{selected_period}")
-        ax.set_xlabel("Tiempo [h]")
-        ax.set_ylabel("Temperatura [°C]")
-        return plt.gcf()
+        ax[0].set_xlim(f1, f2)
+        ax[0].legend()
+        ax[1].legend()
+        return fig
 
-# Crear la aplicación
+    @output
+    @render.text
+    def caracteristicas():
+        lugar = input.place()
+        caracteristicas = cargar_caracteristicas(lugar)
+        lat = caracteristicas['lat']
+        lon = caracteristicas['lon']
+        epw = caracteristicas['epw']
+        return f"Latitud: {lat}, Longitud: {lon}, EPW: {epw}"
+
+# Crear la aplicación de Shiny
 app = App(app_ui, server)
 
 # Ejecutar la aplicación
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()
