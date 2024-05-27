@@ -15,8 +15,10 @@ config.read("lugares.ini")
 lugares = config.sections()
 
 ruta = './data/Casablanca.epw'
+zaca = './data/MEX_MOR_Zacatepec.epw'
+cuerna = './data/MEX_MOR_Cuernavaca.epw'
 dia = "15"
-# read_epw(ruta) #Visualiza el documento que tiene la ruta
+#read_epw(ruta) #Visualiza el documento que tiene la ruta
 
 
 def cargar_caracteristicas(lugar):
@@ -43,9 +45,9 @@ meses_dict = {
     "Diciembre": "12",
 }
 
-def carga_epw(ruta_epw):
-    epw = read_epw(ruta_epw, alias=True, year=2024)
-    return epw
+#def carga_epw(ruta_epw):
+#    epw = read_epw(ruta_epw, alias=True, year=2024)
+#    return epw
 
 
 app_ui = ui.page_fluid(
@@ -80,20 +82,53 @@ def server(input, output, session):
     @output
     @render.plot
     def grafica_mes():
-        epw = read_epw(ruta, year=2024, alias=True)
-        mes = meses_dict[input.periodo()]
-        fig, ax = plt.subplots(2, figsize=(10, 3), sharex=True)
-        f1 = parse(f"2024-{mes}-{dia}")
-        f2 = f1 + pd.Timedelta("7D")
+        place = input.place()
+        #print(place)
+        if "Cuernavaca" in place: 
+            epw = read_epw(cuerna, year=2024, alias=True)
+            mes= meses_dict[input.periodo()]
+            fig, ax = plt.subplots(2, figsize=(10, 3), sharex=True)
+            f1 = parse(f"2024-{mes}-{dia}")
+            f2 = f1 + pd.Timedelta("7D")
 
-        ax[0].plot(epw.To, label="Ta")
-        ax[1].plot(epw.Ig, label="Ig")
-        ax[1].plot(epw.Ib, label="Ib")
-        ax[1].plot(epw.Id, label="Id")
+            ax[0].plot(epw.To, label="Ta")
+            ax[1].plot(epw.Ig, label="Ig")
+            ax[1].plot(epw.Ib, label="Ib")
+            ax[1].plot(epw.Id, label="Id")
 
-        ax[0].set_xlim(f1, f2)
-        ax[0].legend()
-        ax[1].legend()
+            ax[0].set_xlim(f1, f2)
+            ax[0].legend()
+            ax[1].legend()
+        elif "Zacatepec" in place: 
+            epw = read_epw(zaca, year=2024, alias=True)
+            mes= meses_dict[input.periodo()]
+            fig, ax = plt.subplots(2, figsize=(10, 3), sharex=True)
+            f1 = parse(f"2024-{mes}-{dia}")
+            f2 = f1 + pd.Timedelta("7D")
+
+            ax[0].plot(epw.To, label="Ta")
+            ax[1].plot(epw.Ig, label="Ig")
+            ax[1].plot(epw.Ib, label="Ib")
+            ax[1].plot(epw.Id, label="Id")
+
+            ax[0].set_xlim(f1, f2)
+            ax[0].legend()
+            ax[1].legend()
+        else:
+            epw = read_epw(ruta, year=2024, alias=True)
+            mes = meses_dict[input.periodo()]
+            fig, ax = plt.subplots(2, figsize=(10, 3), sharex=True)
+            f1 = parse(f"2024-{mes}-{dia}")
+            f2 = f1 + pd.Timedelta("7D")
+
+            ax[0].plot(epw.To, label="Ta")
+            ax[1].plot(epw.Ig, label="Ig")
+            ax[1].plot(epw.Ib, label="Ib")
+            ax[1].plot(epw.Id, label="Id")
+
+            ax[0].set_xlim(f1, f2)
+            ax[0].legend()
+            ax[1].legend()
         return fig
 
     @output
