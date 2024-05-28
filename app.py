@@ -14,9 +14,9 @@ config = configparser.ConfigParser()
 config.read("lugares.ini")
 lugares = config.sections()
 
-ruta = './data/Casablanca.epw'
-zaca = './data/MEX_MOR_Zacatepec.epw'
-cuerna = './data/MEX_MOR_Cuernavaca.epw'
+#ruta = './data/Casablanca.epw'
+#zaca = './data/MEX_MOR_Zacatepec.epw'
+#cuerna = './data/MEX_MOR_Cuernavaca.epw'
 dia = "15"
 #read_epw(ruta) #Visualiza el documento que tiene la ruta
 
@@ -29,6 +29,17 @@ def cargar_caracteristicas(lugar):
         "epw": lugar_config['f_epw']
     }
 
+def ruta(lugar):
+    f_epw = cargar_caracteristicas(lugar)
+    epwP = f_epw['epw']
+    divi = epwP.split("_")
+    pa = divi[0].replace('data/', '')
+    pais = pa.capitalize()
+    es = divi[1]
+    estado = es.capitalize()
+    ciudad = divi[2].replace('.epw', '')
+    ruta = f"./data/{pa}_{es}_{ciudad}.epw"
+    return ruta
 
 meses_dict = {
     "Enero": "01",
@@ -84,15 +95,9 @@ def server(input, output, session):
     def grafica_mes():
         #Dependiendo el lugar toma el epw
         place = input.place()
-        f_epw = cargar_caracteristicas(place)
-        epwP = f_epw['epw']
-        print(epwP)
-        #División del nombre del epw
-        divi = epwP.split("_")
-        print(divi)
-
-        epw = read_epw(cuerna, year=2024, alias=True)
-        mes= meses_dict[input.periodo()]
+        ruta_epw = ruta(place)
+        epw = read_epw(ruta_epw, year=2024, alias=True)
+        mes = meses_dict[input.periodo()]
         fig, ax = plt.subplots(2, figsize=(10, 3), sharex=True)
         f1 = parse(f"2024-{mes}-{dia}")
         f2 = f1 + pd.Timedelta("7D")
@@ -105,7 +110,6 @@ def server(input, output, session):
         ax[0].set_xlim(f1, f2)
         ax[0].legend()
         ax[1].legend()
-    
         return fig
 
     @output
@@ -117,7 +121,7 @@ def server(input, output, session):
         lon = caracteristicas['lon']
         epw = caracteristicas['epw']
         return f"Latitud: {lat}, Longitud: {lon}, EPW: {epw}"
-
+    
 # Crear la aplicación de Shiny
 app = App(app_ui, server)
 
