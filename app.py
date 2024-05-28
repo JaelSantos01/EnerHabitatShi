@@ -82,53 +82,30 @@ def server(input, output, session):
     @output
     @render.plot
     def grafica_mes():
+        #Dependiendo el lugar toma el epw
         place = input.place()
-        #print(place)
-        if "Cuernavaca" in place: 
-            epw = read_epw(cuerna, year=2024, alias=True)
-            mes= meses_dict[input.periodo()]
-            fig, ax = plt.subplots(2, figsize=(10, 3), sharex=True)
-            f1 = parse(f"2024-{mes}-{dia}")
-            f2 = f1 + pd.Timedelta("7D")
+        f_epw = cargar_caracteristicas(place)
+        epwP = f_epw['epw']
+        print(epwP)
+        #División del nombre del epw
+        divi = epwP.split("_")
+        print(divi)
 
-            ax[0].plot(epw.To, label="Ta")
-            ax[1].plot(epw.Ig, label="Ig")
-            ax[1].plot(epw.Ib, label="Ib")
-            ax[1].plot(epw.Id, label="Id")
+        epw = read_epw(cuerna, year=2024, alias=True)
+        mes= meses_dict[input.periodo()]
+        fig, ax = plt.subplots(2, figsize=(10, 3), sharex=True)
+        f1 = parse(f"2024-{mes}-{dia}")
+        f2 = f1 + pd.Timedelta("7D")
 
-            ax[0].set_xlim(f1, f2)
-            ax[0].legend()
-            ax[1].legend()
-        elif "Zacatepec" in place: 
-            epw = read_epw(zaca, year=2024, alias=True)
-            mes= meses_dict[input.periodo()]
-            fig, ax = plt.subplots(2, figsize=(10, 3), sharex=True)
-            f1 = parse(f"2024-{mes}-{dia}")
-            f2 = f1 + pd.Timedelta("7D")
+        ax[0].plot(epw.To, label="Ta")
+        ax[1].plot(epw.Ig, label="Ig")
+        ax[1].plot(epw.Ib, label="Ib")
+        ax[1].plot(epw.Id, label="Id")
 
-            ax[0].plot(epw.To, label="Ta")
-            ax[1].plot(epw.Ig, label="Ig")
-            ax[1].plot(epw.Ib, label="Ib")
-            ax[1].plot(epw.Id, label="Id")
-
-            ax[0].set_xlim(f1, f2)
-            ax[0].legend()
-            ax[1].legend()
-        else:
-            epw = read_epw(ruta, year=2024, alias=True)
-            mes = meses_dict[input.periodo()]
-            fig, ax = plt.subplots(2, figsize=(10, 3), sharex=True)
-            f1 = parse(f"2024-{mes}-{dia}")
-            f2 = f1 + pd.Timedelta("7D")
-
-            ax[0].plot(epw.To, label="Ta")
-            ax[1].plot(epw.Ig, label="Ig")
-            ax[1].plot(epw.Ib, label="Ib")
-            ax[1].plot(epw.Id, label="Id")
-
-            ax[0].set_xlim(f1, f2)
-            ax[0].legend()
-            ax[1].legend()
+        ax[0].set_xlim(f1, f2)
+        ax[0].legend()
+        ax[1].legend()
+    
         return fig
 
     @output
