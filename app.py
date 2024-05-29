@@ -9,16 +9,22 @@ from iertools.read import read_epw
 from dateutil.parser import parse 
 import configparser
 
+
+import pvlib
+import math
+
+import locale
+from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
+import pytz
+from ehtools.diatipico import *
+timezone = pytz.timezone('America/Mexico_City')
+
 # Leer la configuración desde un archivo INI
 config = configparser.ConfigParser()
 config.read("lugares.ini")
 lugares = config.sections()
 
-#ruta = './data/Casablanca.epw'
-#zaca = './data/MEX_MOR_Zacatepec.epw'
-#cuerna = './data/MEX_MOR_Cuernavaca.epw'
 dia = "15"
-#read_epw(ruta) #Visualiza el documento que tiene la ruta
 
 
 def cargar_caracteristicas(lugar):
@@ -96,20 +102,101 @@ def server(input, output, session):
         #Dependiendo el lugar toma el epw
         place = input.place()
         ruta_epw = ruta(place)
-        epw = read_epw(ruta_epw, year=2024, alias=True)
+        epw = read_epw(ruta_epw, year=2024, alias=True,warns=False)
         mes = meses_dict[input.periodo()]
-        fig, ax = plt.subplots(2, figsize=(10, 3), sharex=True)
-        f1 = parse(f"2024-{mes}-{dia}")
-        f2 = f1 + pd.Timedelta("7D")
 
-        ax[0].plot(epw.To, label="Ta")
-        ax[1].plot(epw.Ig, label="Ig")
-        ax[1].plot(epw.Ib, label="Ib")
-        ax[1].plot(epw.Id, label="Id")
+        lat = 18.8502768
+        lon = -99.2837051
+        altitude = 1280
+        mes = '10'
+        dia = '15'
+        absortancia = 0.3
+        h = 13.
 
-        ax[0].set_xlim(f1, f2)
-        ax[0].legend()
-        ax[1].legend()
+        # Parámetros de la superficie
+        surface_tilt = 90  # Vertical
+        surface_azimuth = 270  # 
+
+        if surface_tilt == 0:
+            LWR = 3.9
+        else:
+            LWR = 0.
+
+        f1 = f'2024-{mes}-{dia} 00:00'
+        f2 = f'2024-{mes}-{dia} 23:59'
+        timezone = pytz.timezone('America/Mexico_City')
+        dia = pd.date_range(start=f1, end=f2, freq='1s',tz=timezone)
+        location = pvlib.location.Location(latitude = lat, 
+                                        longitude=lon, 
+                                        altitude=altitude,
+                                        tz=timezone,
+                                        name='Temixco,Mor')
+
+        dia = location.get_solarposition(dia)
+        del dia['apparent_zenith']
+        del dia['apparent_elevation']
+
+        sunrise,_ = get_sunrise_sunset_times(dia)
+        tTmax,Tmin,Tmax = calculate_tTmaxTminTmax(ruta_epw,mes,epw)
+
+
+        # # Calcular la temperatura ambiente y agregarla al DataFrame
+        dia = temperature_model(dia, Tmin, Tmax, sunrise, tTmax)
+        # # Agrega Ig, Ib, Id a dia 
+
+        dia = add_IgIbId_Tn(ruta_epw,dia,epw,mes,f1,f2,timezone)
+
+        total_irradiance = pvlib.irradiance.get_total_irradiance(
+            surface_tilt=surface_tilt,
+            surface_azimuth=surface_azimuth,
+            dni=dia['Ib'],
+            ghi=dia['Ig'],
+            dhi=dia['Id'],
+            solar_zenith=dia['zenith'],
+            solar_azimuth=dia['azimuth']
+        )
+        dia['Is'] = total_irradiance.poa_global
+        dia['Tsa'] = dia.Ta + dia.Is*absortancia/h - LWR
+        DeltaTa= dia.Ta.max() - dia.Ta.min()
+
+        dia['DeltaTn'] = calculate_DtaTn(DeltaTa)
+
+        
+        timezone = pytz.timezone('America/Mexico_City')
+        plt.rcParams['timezone'] = 'America/Mexico_City'
+
+
+
+        fig, ax = plt.subplots(2,figsize=(10,6),sharex=True)
+
+        df = dia.iloc[::600]
+        ax[0].plot(df.Ta, 'k-',label='Ta')
+        # ax[0].plot(df.Tn, 'g-',label='Tn')
+        ax[0].plot(df.Tsa,'r-',label='Tsa')
+        ax[0].fill_between(df.index,
+                        df.Tn + df.DeltaTn,
+                        df.Tn - df.DeltaTn,color='green',alpha=0.3)
+
+        ax[1].plot(df.Ig,label='Ig')
+        ax[1].plot(df.Ib,label='Ib')
+        ax[1].plot(df.Id,label='Id')
+        ax[1].plot(df.Is,label='Is')
+
+        ax[0].set_ylabel('Temperatura [$^oC$]')
+        ax[1].set_ylabel('Irradiancia [$W/m^2$]')
+
+        locator = AutoDateLocator()
+        formatter = ConciseDateFormatter(locator)
+        ax[1].xaxis.set_major_formatter(formatter)
+
+
+        for a in ax:
+            a.legend()
+            a.grid()
+        fig.tight_layout()
+
+
+
         return fig
 
     @output
