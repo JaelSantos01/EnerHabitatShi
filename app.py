@@ -11,9 +11,10 @@ import configparser
 import pvlib
 import math
 import locale
-from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
+# from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
 import pytz
 from ehtools.diatipico import *
+from ehtools.plot import *
 from pathlib import Path
 
 # Leer la configuración desde un archivo INI
@@ -146,7 +147,7 @@ app_ui = ui.page_sidebar(
         ),
         col_widths=[10, 2],
     ),
-    ui.include_css(app_dir / "styles.css"),
+    # ui.include_css(app_dir / "styles.css"),
     title="Ener-Habitat Phy",
     fillable=True,
 )
@@ -173,79 +174,11 @@ def server(input, output, session):
         surface_tilt = 90  # Vertical
         surface_azimuth = 270  #
 
-        if surface_tilt == 0:
-            LWR = 3.9
-        else:
-            LWR = 0.
-
         f1 = f'2024-{mes}-{dia} 00:00'
         f2 = f'2024-{mes}-{dia} 23:59'
         
-        dia = pd.date_range(start=f1, end=f2, freq='1s',tz=timezone)
-        location = pvlib.location.Location(latitude = lat, 
-                                        longitude=lon, 
-                                        altitude=alt,
-                                        tz=timezone,
-                                        name=place)
-
-        dia = location.get_solarposition(dia)
-        del dia['apparent_zenith']
-        del dia['apparent_elevation']
-
-        sunrise,_ = get_sunrise_sunset_times(dia)
-        tTmax,Tmin,Tmax = calculate_tTmaxTminTmax(ruta_epw,mes,epw)
-        
-        # # Calcular la temperatura ambiente y agregarla al DataFrame
-        dia = temperature_model(dia, Tmin, Tmax, sunrise, tTmax)
-        # # Agrega Ig, Ib, Id a dia 
-
-        dia = add_IgIbId_Tn(ruta_epw,dia,epw,mes,f1,f2,timezone)
-
-        total_irradiance = pvlib.irradiance.get_total_irradiance(
-            surface_tilt=surface_tilt,
-            surface_azimuth=surface_azimuth,
-            dni=dia['Ib'],
-            ghi=dia['Ig'],
-            dhi=dia['Id'],
-            solar_zenith=dia['zenith'],
-            solar_azimuth=dia['azimuth']
-        )
-        dia['Is'] = total_irradiance.poa_global
-        dia['Tsa'] = dia.Ta + dia.Is*absortancia/h - LWR
-        DeltaTa= dia.Ta.max() - dia.Ta.min()
-
-        dia['DeltaTn'] = calculate_DtaTn(DeltaTa)
-        plt.rcParams['timezone'] = 'America/Mexico_City'
-
-        fig, ax = plt.subplots(2,figsize=(10,6),sharex=True)
-
-        df = dia.iloc[::600]
-        ax[0].plot(df.Ta, 'k-',label='Ta')
-        # ax[0].plot(df.Tn, 'g-',label='Tn')
-        ax[0].plot(df.Tsa,'r-',label='Tsa')
-        ax[0].fill_between(df.index,
-                        df.Tn + df.DeltaTn,
-                        df.Tn - df.DeltaTn,color='green',alpha=0.3)
-
-        ax[1].plot(df.Ig,label='Ig')
-        ax[1].plot(df.Ib,label='Ib')
-        ax[1].plot(df.Id,label='Id')
-        ax[1].plot(df.Is,label='Is')
-
-        ax[0].set_ylabel('Temperatura [$^oC$]')
-        ax[1].set_ylabel('Irradiancia [$W/m^2$]')
-
-        locator = AutoDateLocator()
-        formatter = ConciseDateFormatter(locator)
-        ax[1].xaxis.set_major_formatter(formatter)
-
-
-        for a in ax:
-            a.legend()
-            a.grid()
-        fig.tight_layout()
-
-        return fig
+        dia = calculate_day(f1,f2,timezone,lat,lon,alt,place,epw, ruta_epw,mes,surface_tilt,surface_azimuth,absortancia,h)
+        plot_T_I(dia)
 
     #@output
     #@render.text

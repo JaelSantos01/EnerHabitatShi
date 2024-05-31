@@ -129,3 +129,43 @@ def calculate_dt(df):
     return df
 
 
+def calculate_day(f1,f2,timezone,lat,lon,alt,place,epw,ruta_epw,mes,surface_tilt,surface_azimuth,absortancia,h):
+    dia = pd.date_range(start=f1, end=f2, freq='1s',tz=timezone)
+    location = pvlib.location.Location(latitude = lat, 
+                                    longitude=lon, 
+                                    altitude=alt,
+                                    tz=timezone,
+                                    name=place)
+
+    dia = location.get_solarposition(dia)
+    del dia['apparent_zenith']
+    del dia['apparent_elevation']
+
+    sunrise,_ = get_sunrise_sunset_times(dia)
+    tTmax,Tmin,Tmax = calculate_tTmaxTminTmax(ruta_epw,mes,epw)
+    
+    # # Calcular la temperatura ambiente y agregarla al DataFrame
+    dia = temperature_model(dia, Tmin, Tmax, sunrise, tTmax)
+    # # Agrega Ig, Ib, Id a dia 
+
+    dia = add_IgIbId_Tn(ruta_epw,dia,epw,mes,f1,f2,timezone)
+
+    total_irradiance = pvlib.irradiance.get_total_irradiance(
+        surface_tilt=surface_tilt,
+        surface_azimuth=surface_azimuth,
+        dni=dia['Ib'],
+        ghi=dia['Ig'],
+        dhi=dia['Id'],
+        solar_zenith=dia['zenith'],
+        solar_azimuth=dia['azimuth']
+    )
+    dia['Is'] = total_irradiance.poa_global      
+    if surface_tilt == 0:
+        LWR = 3.9
+    else:
+        LWR = 0.
+    dia['Tsa'] = dia.Ta + dia.Is*absortancia/h - LWR
+    DeltaTa= dia.Ta.max() - dia.Ta.min()
+
+    dia['DeltaTn'] = calculate_DtaTn(DeltaTa)
+    return dia
