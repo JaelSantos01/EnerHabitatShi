@@ -14,11 +14,19 @@ import locale
 from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
 import pytz
 from ehtools.diatipico import *
+from pathlib import Path
 
 # Leer la configuración desde un archivo INI
 config = configparser.ConfigParser()
 config.read("lugares.ini")
 lugares = config.sections()
+
+configM = configparser.ConfigParser()
+configM.read("materiales.ini")
+materiales = configM.sections()
+
+timezone = pytz.timezone('America/Mexico_City')
+app_dir = Path(__file__).parent
 
 def cargar_caracteristicas(lugar):
     lugar_config = config[lugar]
@@ -56,41 +64,91 @@ meses_dict = {
     "Diciembre": "12",
 }
 
-app_ui = ui.page_fluid(
-    ui.panel_title("Ener-Habitat Phy"),
-    ui.layout_sidebar(
-        ui.panel_sidebar(
-            ui.input_select(
+app_ui = ui.page_sidebar(
+    ui.sidebar(
+        ui.input_radio_buttons(
+            "type",
+            "Sistema a realizar:",
+            {"1": "Capa homogénea", "2": "Modelo 2D", "3": "Modelo EHLS"},
+        ),
+        ui.input_select(
                 "place",
                 "Lugar:",
                 choices= lugares
-            ),
-            ui.input_selectize(
+        ),
+        ui.input_selectize(
                 "periodo",
                 "Periodo:",
                 choices=list(meses_dict.keys())
-            ),
-            ui.input_select(
+        ),
+        ui.input_select(
                 "Conditional",
                 "Condición:",
                 choices=["Sin aire acondicionado", "Con aire acondicionado"]
-            ),
-            ui.input_select(
+        ),
+        ui.input_select(
                 "option",
                 "Ubicación:",
                 choices=["Techo", "Muro"]
+        ),
+    ),
+    ui.layout_column_wrap(
+        ui.value_box(
+            "Número de Capas:",
+            ui.input_slider(
+                "capas",
+                "",
+                1,5,1
             ),
+        ),
+        ui.value_box(
+            "Inclinación:",
+            ui.input_numeric(
+                "inclinacion",
+                "",
+                0.1, min=0.1, max=None
+            ),
+        ),
+        ui.value_box(
+            "Número de Sistemas:",
             ui.input_slider(
                 "rango",
-                "Número de Sistemas:",
+                "",
                 1,5,1
-            )
+            ),
+            
         ),
-        ui.panel_main(
+        fill=False,
+    ),
+    ui.layout_columns(
+        ui.card(
+            ui.card_header("Gráficas"),
             ui.output_plot("grafica_mes"),
-            ui.output_text("caracteristicas")
-        )
-    )
+            full_screen=True,
+        ),
+        ui.card(
+            ui.card_header("Datos:"),
+            ui.input_text(
+                "espesor",
+                "Espesor",
+                "  "
+            ),
+            ui.input_select(
+                "material",
+                "Materiales:",
+                choices= materiales
+            ),
+            ui.input_select(
+                "absortancia",
+                "Absortancia(A):",
+                choices= materiales
+            ),
+        ),
+        col_widths=[10, 2],
+    ),
+    ui.include_css(app_dir / "styles.css"),
+    title="Ener-Habitat Phy",
+    fillable=True,
 )
 
 
@@ -108,14 +166,12 @@ def server(input, output, session):
         lat = caracteristicas['lat']
         lon = caracteristicas['lon']
         alt = caracteristicas['alt']
-
         dia = '15'
         absortancia = 0.3
         h = 13.
         # Parámetros de la superficie
         surface_tilt = 90  # Vertical
         surface_azimuth = 270  #
-        timezone = pytz.timezone('America/Mexico_City')
 
         if surface_tilt == 0:
             LWR = 3.9
@@ -159,6 +215,7 @@ def server(input, output, session):
         DeltaTa= dia.Ta.max() - dia.Ta.min()
 
         dia['DeltaTn'] = calculate_DtaTn(DeltaTa)
+        plt.rcParams['timezone'] = 'America/Mexico_City'
 
         fig, ax = plt.subplots(2,figsize=(10,6),sharex=True)
 
@@ -190,16 +247,16 @@ def server(input, output, session):
 
         return fig
 
-    @output
-    @render.text
-    def caracteristicas():
-        lugar = input.place()
-        caracteristicas = cargar_caracteristicas(lugar)
-        lat = caracteristicas['lat']
-        lon = caracteristicas['lon']
-        alt = caracteristicas['alt']
-        epw = caracteristicas['epw']
-        return f"Latitud: {lat}, Longitud: {lon}, Altitud: {alt}, EPW: {epw}"
+    #@output
+    #@render.text
+    #def caracteristicas():
+    #    lugar = input.place()
+    #    caracteristicas = cargar_caracteristicas(lugar)
+    #    lat = caracteristicas['lat']
+    #    lon = caracteristicas['lon']
+    #    alt = caracteristicas['alt']
+    #    epw = caracteristicas['epw']
+    #    return f"Latitud: {lat}, Longitud: {lon}, Altitud: {alt}, EPW: {epw}"
     
 # Crear la aplicación de Shiny
 app = App(app_ui, server)
