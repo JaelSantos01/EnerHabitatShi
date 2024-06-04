@@ -1,16 +1,6 @@
-import plotly.express as px
-import pandas as pd
-from shiny import App, ui, render
-from shinywidgets import render_widget
-import seaborn as sns
-import matplotlib.pyplot as plt
-import numpy as np
+from shiny import App, ui, render, reactive
 from iertools.read import read_epw
-from dateutil.parser import parse 
 import configparser
-import pvlib
-import math
-import locale
 import pytz
 from ehtools.diatipico import *
 from ehtools.plot import *
@@ -84,7 +74,7 @@ app_ui = ui.page_sidebar(
             ui.card_header("Datos:"),
             ui.output_ui("datos_ui")
         ),
-        col_widths=[10, 2],
+        col_widths=[9, 3],
     ),
     ui.include_css(app_dir / "styles.css"),
     title="Ener-Habitat Phy",
@@ -154,19 +144,11 @@ def server(input, output, session):
     def datos_ui():
         if input.type() == "1":
             return ui.TagList(
-                ui.input_text(
-                    "espesor",
-                    "Espesor",
-                    "  "
-                ),
-                ui.input_select(
-                    "material",
-                    "Materiales:",
-                    choices= materiales
-                ),
+                ui.output_ui("campos")
             )
         elif input.type() == "2":
             return ui.TagList(
+                ui.HTML('<img src="http://www.enerhabitat.unam.mx/Cie/images/Muro-tipo1-modelo1.png" width="170" height="170">'),
                 ui.input_select("muro", "Muro:", choices=materiales),
                 ui.input_numeric("e11", "e11", value=0.1),
                 ui.input_numeric("e21", "e21", value=0.1),
@@ -200,6 +182,25 @@ def server(input, output, session):
             
         dia = calculate_day(f1, f2, timezone, lat, lon, alt, place, epw, ruta_epw, mes, surface_tilt, surface_azimuth, absortancia, h)
         plot_T_I(dia)
+
+    @output
+    @render.ui
+    def campos():
+        num = input.sistemas()
+        i = 0
+        
+        campos_list = []
+        while i < num:
+            
+            campos_list.append(
+                ui.TagList(
+                    ui.input_numeric(f"espesor_{i}", f"Espesor {i+1}:", value=0.1),
+                    ui.input_select(f"materiales_{i}", f"Materiales {i+1}:", choices=materiales)
+                )
+            )
+            i = i + 1
+        return campos_list
+
 
 app = App(app_ui, server)
 
