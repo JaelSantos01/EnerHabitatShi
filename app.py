@@ -11,7 +11,6 @@ import configparser
 import pvlib
 import math
 import locale
-# from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
 import pytz
 from ehtools.diatipico import *
 from ehtools.plot import *
@@ -70,94 +69,117 @@ app_ui = ui.page_sidebar(
         ui.input_radio_buttons(
             "type",
             "Sistema a realizar:",
-            {"1": "Capa homogénea", "2": "Modelo 2D", "3": "Modelo EHLS"},
+            {"1": "Capa homogénea", "2": "Modelo 2D"},
         ),
-        ui.input_select(
-                "place",
-                "Lugar:",
-                choices= lugares
-        ),
-        ui.input_selectize(
-                "periodo",
-                "Periodo:",
-                choices=list(meses_dict.keys())
-        ),
-        ui.input_select(
-                "Conditional",
-                "Condición:",
-                choices=["Sin aire acondicionado", "Con aire acondicionado"]
-        ),
-        ui.input_select(
-                "option",
-                "Ubicación:",
-                choices=["Techo", "Muro"]
-        ),
+        ui.output_ui("additional_controls"),
     ),
-    ui.layout_column_wrap(
-        ui.value_box(
-            "Número de Capas:",
-            ui.input_slider(
-                "capas",
-                "",
-                1,5,1
-            ),
-        ),
-        ui.value_box(
-            "Inclinación:",
-            ui.input_numeric(
-                "inclinacion",
-                "",
-                0.1, min=0.1, max=None
-            ),
-        ),
-        ui.value_box(
-            "Número de Sistemas:",
-            ui.input_slider(
-                "rango",
-                "",
-                1,5,1
-            ),
-            
-        ),
-        fill=False,
-    ),
+            ui.output_ui("boxes"),
     ui.layout_columns(
         ui.card(
-            ui.card_header("Gráficas"),
+            ui.card_header("Gráfica"),
             ui.output_plot("grafica_mes"),
             full_screen=True,
         ),
         ui.card(
             ui.card_header("Datos:"),
-            ui.input_text(
-                "espesor",
-                "Espesor",
-                "  "
-            ),
-            ui.input_select(
-                "material",
-                "Materiales:",
-                choices= materiales
-            ),
-            ui.input_select(
-                "absortancia",
-                "Absortancia(A):",
-                choices= materiales
-            ),
+            ui.output_ui("datos_ui")
         ),
         col_widths=[10, 2],
     ),
-    # ui.include_css(app_dir / "styles.css"),
+    ui.include_css(app_dir / "styles.css"),
     title="Ener-Habitat Phy",
     fillable=True,
 )
 
-
 def server(input, output, session):
+    @output
+    @render.ui
+    def additional_controls():
+        if input.type() == "1":
+            return ui.TagList(
+                ui.input_select("place", "Lugar:", choices=lugares),
+                ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
+                ui.input_select("ubicacion", "Ubicación:", choices=["Techo", "Muro"]),
+                ui.input_select("orientacion", "Orientación:", choices=[
+                    "Norte", "Noreste", "Este", "Sureste", "Sur",
+                    "Suroeste", "Oeste", "Noroeste"
+                ]),
+                ui.input_numeric("inclinacion", "Inclinación:", value=0.1),
+                ui.input_select("absortancia", "Absortancia(A):", choices=materiales),
+            )
+        elif input.type() == "2":
+            return ui.TagList(
+                ui.input_select("place", "Lugar:", choices=lugares),
+                ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
+                ui.input_select("option", "Ubicación:", choices=["Techo", "Muro"]),
+                ui.input_select("orientacion", "Orientación:", choices=[
+                    "Norte", "Noreste", "Este", "Sureste", "Sur",
+                    "Suroeste", "Oeste", "Noroeste"
+                ]),
+                ui.input_select("absortancia", "Absortancia(A):", choices=materiales),
+            )
+        return None
+    
+    @output
+    @render.ui
+    def boxes():
+        if input.type() == "1":
+            return ui.layout_column_wrap(
+                3,  # Número de columnas por fila
+                ui.value_box(
+                    "Número de Sistemas:",
+                    ui.input_slider("sistemas", "", 1, 5, 1),
+                ),
+                ui.value_box(
+                    "Condición:",
+                    ui.input_select("Conditional", "", choices=["Sin aire acondicionado", "Con aire acondicionado"]),
+                ),
+            )
+        elif input.type() == "2":
+            return ui.layout_column_wrap(
+                3,  # Número de columnas por fila
+                ui.value_box(
+                    "Número de Capas:",
+                    ui.input_slider("capas", "", 1, 5, 1),
+                ),
+                ui.value_box(
+                    "Condición:",
+                    ui.input_select("Conditional", "", choices=["Sin aire acondicionado", "Con aire acondicionado"]),
+                ),
+            )
+        return None
+    
+    @output
+    @render.ui
+    def datos_ui():
+        if input.type() == "1":
+            return ui.TagList(
+                ui.input_text(
+                    "espesor",
+                    "Espesor",
+                    "  "
+                ),
+                ui.input_select(
+                    "material",
+                    "Materiales:",
+                    choices= materiales
+                ),
+            )
+        elif input.type() == "2":
+            return ui.TagList(
+                ui.input_select("muro", "Muro:", choices=materiales),
+                ui.input_numeric("e11", "e11", value=0.1),
+                ui.input_numeric("e21", "e21", value=0.1),
+                ui.input_numeric("e12", "e12", value=0.1),
+                ui.input_numeric("a11", "a11", value=0.1),
+                ui.input_numeric("a21", "a21", value=0.1),
+                ui.input_numeric("a12", "a12", value=0.1),
+            )
+        return None
+
     @output
     @render.plot
     def grafica_mes():
-        #Dependiendo el lugar toma el epw
         place = input.place()
         ruta_epw = ruta(place)
         epw = read_epw(ruta_epw, year=2024, alias=True)
@@ -170,30 +192,16 @@ def server(input, output, session):
         dia = '15'
         absortancia = 0.3
         h = 13.
-        # Parámetros de la superficie
         surface_tilt = 90  # Vertical
-        surface_azimuth = 270  #
+        surface_azimuth = 270
 
         f1 = f'2024-{mes}-{dia} 00:00'
         f2 = f'2024-{mes}-{dia} 23:59'
-        
-        dia = calculate_day(f1,f2,timezone,lat,lon,alt,place,epw, ruta_epw,mes,surface_tilt,surface_azimuth,absortancia,h)
+            
+        dia = calculate_day(f1, f2, timezone, lat, lon, alt, place, epw, ruta_epw, mes, surface_tilt, surface_azimuth, absortancia, h)
         plot_T_I(dia)
 
-    #@output
-    #@render.text
-    #def caracteristicas():
-    #    lugar = input.place()
-    #    caracteristicas = cargar_caracteristicas(lugar)
-    #    lat = caracteristicas['lat']
-    #    lon = caracteristicas['lon']
-    #    alt = caracteristicas['alt']
-    #    epw = caracteristicas['epw']
-    #    return f"Latitud: {lat}, Longitud: {lon}, Altitud: {alt}, EPW: {epw}"
-    
-# Crear la aplicación de Shiny
 app = App(app_ui, server)
 
-# Ejecutar la aplicación
 if __name__ == "__main__":
     app.run()
