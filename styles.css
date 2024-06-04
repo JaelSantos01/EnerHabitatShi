@@ -1,23 +1,7 @@
-body {
-    background-color: white;
-
-    > .container {
-    max-width: 550px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    padding-top: 1rem;
-    padding-bottom: 2rem;
-    }
-    .card-header {
-    padding-right: 1.5rem;
-    padding-left: 1.5rem;
-    }
-    .card  {
-    padding-bottom: 1rem;
-    }
+:root {
+    --bslib-sidebar-main-bg: #f8f8f8;
 }
 
-.card-body  {
-    width: 100% !important;
-    height: 153px;
+.plotly .modebar-container {
+    display: none !important;
 }

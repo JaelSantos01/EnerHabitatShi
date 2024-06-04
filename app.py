@@ -65,10 +65,10 @@ app_ui = ui.page_sidebar(
     ),
             ui.output_ui("boxes"),
     ui.layout_columns(
-        ui.card(
-            ui.card_header("Gráfica"),
-            ui.output_plot("grafica_mes"),
-            full_screen=True,
+        ui.navset_card_underline(
+            ui.nav_panel("Gráfica", ui.output_plot("grafica_mes")),
+            ui.nav_panel("Resultados", ui.output_plot("pendiente")),
+            title="Datos Gráficados",
         ),
         ui.card(
             ui.card_header("Datos:"),
@@ -150,12 +150,18 @@ def server(input, output, session):
             return ui.TagList(
                 ui.HTML('<img src="http://www.enerhabitat.unam.mx/Cie/images/Muro-tipo1-modelo1.png" width="170" height="170">'),
                 ui.input_select("muro", "Muro:", choices=materiales),
-                ui.input_numeric("e11", "e11", value=0.1),
-                ui.input_numeric("e21", "e21", value=0.1),
-                ui.input_numeric("e12", "e12", value=0.1),
-                ui.input_numeric("a11", "a11", value=0.1),
-                ui.input_numeric("a21", "a21", value=0.1),
-                ui.input_numeric("a12", "a12", value=0.1),
+                ui.layout_columns(
+                    ui.input_numeric("e11", "e11", value=0.1),
+                    ui.input_numeric("a11", "a11", value=0.1),
+                ),
+                ui.layout_columns(
+                    ui.input_numeric("e21", "e21", value=0.1),
+                    ui.input_numeric("a21", "a21", value=0.1),
+                ),
+                ui.layout_columns(
+                    ui.input_numeric("e12", "e12", value=0.1),
+                    ui.input_numeric("a12", "a12", value=0.1),
+                ),
             )
         return None
 
