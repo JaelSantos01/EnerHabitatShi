@@ -18,6 +18,7 @@ materiales = configM.sections()
 timezone = pytz.timezone('America/Mexico_City')
 app_dir = Path(__file__).parent
 
+
 def cargar_caracteristicas(lugar):
     lugar_config = config[lugar]
     return {
@@ -26,7 +27,6 @@ def cargar_caracteristicas(lugar):
         "alt": lugar_config.getint('altitude'),
         "epw": lugar_config['f_epw']
     }
-
 def ruta(lugar):
     f_epw = cargar_caracteristicas(lugar)
     epwP = f_epw['epw']
@@ -148,7 +148,7 @@ def server(input, output, session):
             )
         elif input.type() == "2":
             return ui.TagList(
-                ui.HTML('<img src="http://www.enerhabitat.unam.mx/Cie/images/Muro-tipo1-modelo1.png" width="170" height="170">'),
+                ui.HTML('<img src="http://www.enerhabitat.unam.mx/Cie/images/Muro-tipo1-modelo1.png" width="320" height="150">'),
                 ui.input_select("muro", "Muro:", choices=materiales),
                 ui.layout_columns(
                     ui.input_numeric("e11", "e11", value=0.1),
@@ -170,23 +170,28 @@ def server(input, output, session):
     def grafica_mes():
         place = input.place()
         ruta_epw = ruta(place)
-        epw = read_epw(ruta_epw, year=2024, alias=True)
+        # epw = read_epw(ruta_epw, year=2024, alias=True)
         mes = meses_dict[input.periodo()]
 
         caracteristicas = cargar_caracteristicas(place)
         lat = caracteristicas['lat']
         lon = caracteristicas['lon']
         alt = caracteristicas['alt']
-        dia = '15'
         absortancia = 0.3
-        h = 13.
         surface_tilt = 90  # Vertical
         surface_azimuth = 270
 
-        f1 = f'2024-{mes}-{dia} 00:00'
-        f2 = f'2024-{mes}-{dia} 23:59'
-            
-        dia = calculate_day(f1, f2, timezone, lat, lon, alt, place, epw, ruta_epw, mes, surface_tilt, surface_azimuth, absortancia, h)
+        dia = calculate_day(
+            ruta_epw,
+            caracteristicas['lat'],
+            caracteristicas['lon'],
+            caracteristicas['alt'],
+            mes,
+            absortancia,
+            surface_tilt,
+            surface_azimuth,
+            timezone
+            )
         plot_T_I(dia)
 
     @output
