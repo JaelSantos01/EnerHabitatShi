@@ -197,11 +197,12 @@ def server(input, output, session):
         
         campos_list = []
         while i < num:
-            
             campos_list.append(
                 ui.TagList(
-                    ui.input_numeric(f"espesor_{i}", f"Espesor {i+1}:", value=0.1),
-                    ui.input_select(f"materiales_{i}", f"Materiales {i+1}:", choices=materiales)
+                    ui.layout_columns(
+                        ui.input_numeric(f"espesor_{i}", f"Espesor {i+1}:", value=0.1),
+                        ui.input_select(f"materiales_{i}", f"Material {i+1}:", choices=materiales)
+                    ),
                 )
             )
             i = i + 1
