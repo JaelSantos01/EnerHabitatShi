@@ -54,6 +54,22 @@ meses_dict = {
     "Diciembre": "12",
 }
 
+location={
+    "Muro": 90,
+    "Techo": 0
+}
+
+orientacion = {
+    "Norte": 0,
+    "Noreste": 80,
+    "Este": 90, 
+    "Sureste": 140, 
+    "Sur": 180,
+    "Suroeste": 200, 
+    "Oeste": 270, 
+    "Noroeste": 290
+}
+
 app_ui = ui.page_sidebar(
     ui.sidebar(
         ui.input_radio_buttons(
@@ -89,24 +105,17 @@ def server(input, output, session):
             return ui.TagList(
                 ui.input_select("place", "Lugar:", choices=lugares),
                 ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
-                ui.input_select("ubicacion", "Ubicación:", choices=["Techo", "Muro"]),
-                ui.input_select("orientacion", "Orientación:", choices=[
-                    "Norte", "Noreste", "Este", "Sureste", "Sur",
-                    "Suroeste", "Oeste", "Noroeste"
-                ]),
-                ui.input_numeric("inclinacion", "Inclinación:", value=0.1),
-                ui.input_select("absortancia", "Absortancia(A):", choices=materiales),
+                ui.input_select("ubicacion", "Ubicación:", choices=list(location.keys())),
+                ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
+                ui.input_numeric("abstraction", "Absortancia: ", value=0.1, min = 0.1, max = 1.0, step = 0.1),
             )
         elif input.type() == "2":
             return ui.TagList(
                 ui.input_select("place", "Lugar:", choices=lugares),
                 ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
-                ui.input_select("option", "Ubicación:", choices=["Techo", "Muro"]),
-                ui.input_select("orientacion", "Orientación:", choices=[
-                    "Norte", "Noreste", "Este", "Sureste", "Sur",
-                    "Suroeste", "Oeste", "Noroeste"
-                ]),
-                ui.input_select("absortancia", "Absortancia(A):", choices=materiales),
+                ui.input_select("option", "Ubicación:", choices=list(location.keys())),
+                ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
+                ui.input_numeric("abstraction", "Absortancia: ", value=0.1, min = 0.1, max = 1.0, step = 0.1),
             )
         return None
     
@@ -115,7 +124,7 @@ def server(input, output, session):
     def boxes():
         if input.type() == "1":
             return ui.layout_column_wrap(
-                3,  # Número de columnas por fila
+                3,# Número de columnas por fila
                 ui.value_box(
                     "Número de Sistemas:",
                     ui.input_slider("sistemas", "", 1, 5, 1),
@@ -174,12 +183,11 @@ def server(input, output, session):
         mes = meses_dict[input.periodo()]
 
         caracteristicas = cargar_caracteristicas(place)
-        lat = caracteristicas['lat']
-        lon = caracteristicas['lon']
-        alt = caracteristicas['alt']
+
         absortancia = 0.3
-        surface_tilt = 90  # Vertical
-        surface_azimuth = 270
+        surface_tilt = location[input.option()]  # ubicacion
+        print(surface_tilt)
+        surface_azimuth = orientacion[input.orientacion()] #270
 
         dia = calculate_day(
             ruta_epw,
