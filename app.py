@@ -1,6 +1,4 @@
 from shiny import App, ui, render, reactive
-from iertools.read import read_epw
-import configparser
 import pytz
 from ehtools.diatipico import *
 from ehtools.plot import *
@@ -71,9 +69,9 @@ app_ui = ui.page_sidebar(
             "Sistema a realizar:",
             {"1": "Capa homogénea", "2": "Modelo 2D"},
         ),
-        ui.output_ui("additional_controls"),
+        ui.output_ui("left_controls"),
     ),
-            ui.output_ui("boxes"),
+        ui.output_ui("controls_top"),
     ui.layout_columns(
         ui.navset_card_underline(
             ui.nav_panel("Gráfica", ui.output_plot("grafica_mes")),
@@ -82,7 +80,7 @@ app_ui = ui.page_sidebar(
         ),
         ui.card(
             ui.card_header("Datos:"),
-            ui.output_ui("datos_ui")
+            ui.output_ui("controls_rigth")
         ),
         col_widths=[9, 3],
     ),
@@ -94,79 +92,32 @@ app_ui = ui.page_sidebar(
 def server(input, output, session):
     @output
     @render.ui
-    def additional_controls():
-        if input.type() == "1":
-            return ui.TagList(
-                ui.input_select("place", "Lugar:", choices=lugares),
-                ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
-                ui.input_select("ubicacion", "Ubicación:", choices=list(location.keys())),
-                ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
-                ui.input_select("abstrac","Absortancia:", choices=abstraccion),
-            )
-        elif input.type() == "2":
-            return ui.TagList(
-                ui.input_select("place", "Lugar:", choices=lugares),
-                ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
-                ui.input_select("ubicacion", "Ubicación:", choices=list(location.keys())),
-                ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
-                ui.input_select("abstrac","Absortancia:", choices=abstraccion),
-            )
-        return None
+    def left_controls():
+        type = input.type()
+        return controls_left(type, 
+                    lugares, 
+                    meses_dict, 
+                    location, 
+                    orientacion, 
+                    abstraccion)
     
     @output
     @render.ui
-    def boxes():
-        if input.type() == "1":
-            return ui.layout_column_wrap(
-                3,# Número de columnas por fila
-                ui.value_box(
-                    "Número de Sistemas:",
-                    ui.input_slider("sistemas", "", 1, 5, 1),
-                ),
-                ui.value_box(
-                    "Condición:",
-                    ui.input_select("Conditional", "", choices=["Sin aire acondicionado", "Con aire acondicionado"]),
-                ),
-            )
-        elif input.type() == "2":
-            return ui.layout_column_wrap(
-                3,  # Número de columnas por fila
-                ui.value_box(
-                    "Número de Capas:",
-                    ui.input_slider("capas", "", 1, 5, 1),
-                ),
-                ui.value_box(
-                    "Condición:",
-                    ui.input_select("Conditional", "", choices=["Sin aire acondicionado", "Con aire acondicionado"]),
-                ),
-            )
-        return None
+    def controls_top():
+        type = input.type()
+        return top_controls(type)
     
     @output
     @render.ui
-    def datos_ui():
-        if input.type() == "1":
-            return ui.TagList(
-                ui.output_ui("campos")
-            )
-        elif input.type() == "2":
-            return ui.TagList(
-                ui.HTML('<img src="http://www.enerhabitat.unam.mx/Cie/images/Muro-tipo1-modelo1.png" width="320" height="150">'),
-                ui.input_select("muro", "Muro:", choices=materiales),
-                ui.layout_columns(
-                    ui.input_numeric("e11", "e11", value=0.1),
-                    ui.input_numeric("a11", "a11", value=0.1),
-                ),
-                ui.layout_columns(
-                    ui.input_numeric("e21", "e21", value=0.1),
-                    ui.input_numeric("a21", "a21", value=0.1),
-                ),
-                ui.layout_columns(
-                    ui.input_numeric("e12", "e12", value=0.1),
-                    ui.input_numeric("a12", "a12", value=0.1),
-                ),
-            )
-        return None
+    def controls_rigth():
+        type = input.type()
+        return rigth_controls(type, materiales)
+    
+    @output
+    @render.ui
+    def campos():
+        num = input.sistemas()
+        return info_right(num, materiales)
 
     @output
     @render.plot
@@ -196,25 +147,6 @@ def server(input, output, session):
         )
         
         plot_T_I(dia)
-
-    @output
-    @render.ui
-    def campos():
-        num = input.sistemas()
-        i = 0
-        
-        campos_list = []
-        while i < num:
-            campos_list.append(
-                ui.TagList(
-                    ui.layout_columns(
-                        ui.input_numeric(f"espesor_{i}", f"Espesor {i+1}:", value=0.1),
-                        ui.input_select(f"materiales_{i}", f"Material {i+1}:", choices=materiales)
-                    ),
-                )
-            )
-            i = i + 1
-        return campos_list
 
 
 app = App(app_ui, server)
