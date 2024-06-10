@@ -3,9 +3,8 @@ from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
 plt.rcParams['timezone'] = 'America/Mexico_City'    
 
 def plot_T_I(dia):
-    
-    
     fig, ax = plt.subplots(2,figsize=(10,6),sharex=True)
+
     df = dia.iloc[::600]
     ax[0].plot(df.Ta, 'k-',label='Ta')
     # ax[0].plot(df.Tn, 'g-',label='Tn')
@@ -31,5 +30,3 @@ def plot_T_I(dia):
         a.legend()
         a.grid()
     fig.tight_layout()
-
-    return fig

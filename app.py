@@ -5,39 +5,10 @@ import pytz
 from ehtools.diatipico import *
 from ehtools.plot import *
 from pathlib import Path
-
-# Leer la configuración desde un archivo INI
-config = configparser.ConfigParser()
-config.read("lugares.ini")
-lugares = config.sections()
-
-configM = configparser.ConfigParser()
-configM.read("materiales.ini")
-materiales = configM.sections()
+from ehtools.funciones import *
 
 timezone = pytz.timezone('America/Mexico_City')
 app_dir = Path(__file__).parent
-
-
-def cargar_caracteristicas(lugar):
-    lugar_config = config[lugar]
-    return {
-        "lat": lugar_config.getfloat('lat'),
-        "lon": lugar_config.getfloat('lon'),
-        "alt": lugar_config.getint('altitude'),
-        "epw": lugar_config['f_epw']
-    }
-def ruta(lugar):
-    f_epw = cargar_caracteristicas(lugar)
-    epwP = f_epw['epw']
-    divi = epwP.split("_")
-    pa = divi[0].replace('data/', '')
-    pais = pa.capitalize()
-    es = divi[1]
-    estado = es.capitalize()
-    ciudad = divi[2].replace('.epw', '')
-    ruta = f"./data/{pa}_{es}_{ciudad}.epw"
-    return ruta
     
 meses_dict = {
     "Enero": "01",
@@ -56,18 +27,41 @@ meses_dict = {
 
 location={
     "Muro": 90,
-    "Techo": 0
+    "Techo": 0,
 }
 
 orientacion = {
     "Norte": 0,
-    "Noreste": 80,
+    "Noreste": 45,
     "Este": 90, 
-    "Sureste": 140, 
+    "Sureste": 135, 
     "Sur": 180,
-    "Suroeste": 200, 
+    "Suroeste": 225, 
     "Oeste": 270, 
-    "Noroeste": 290
+    "Noroeste": 315,
+}
+
+abstraccion = {
+    "Acero" : 0.45,
+    "Aluminio oxidado": 0.15,
+    "Aluminio pulido": 0.1,
+    "Asfalto nuevo": 0.95,
+    "Concreto": 0.7,
+    "Concreto claro o adocreto claro": 0.6,
+    "Impermeabilizante o pintura blanca": 0.2,
+    "Impermeabilizante o pintura blanca nueva": 0.15,
+    "Impermeabilizante o pintura negra": 0.9,
+    "Impermeabilizante o pintura negra mate nueva": 0.95,
+    "Impermeabilizante rojo terracota": 0.7,
+    "Ladrillo rojo": 0.65,
+    "Lámina galvanizada": 0.7,
+    "Lámina galvanizada brillante": 0.25,
+    "Pintura aluminio": 0.2,
+    "Pintura colores claros": 0.3,
+    "Pintura colores intermedios": 0.5,
+    "Pintura colores oscuros": 0.7,
+    "Recubrimiento elastomérico blanco": 0.3,
+    "Teja roja": 0.7,
 }
 
 app_ui = ui.page_sidebar(
@@ -107,15 +101,15 @@ def server(input, output, session):
                 ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
                 ui.input_select("ubicacion", "Ubicación:", choices=list(location.keys())),
                 ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
-                ui.input_numeric("abstraction", "Absortancia: ", value=0.1, min = 0.1, max = 1.0, step = 0.1),
+                ui.input_select("abstrac","Absortancia:", choices=abstraccion),
             )
         elif input.type() == "2":
             return ui.TagList(
                 ui.input_select("place", "Lugar:", choices=lugares),
                 ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
-                ui.input_select("option", "Ubicación:", choices=list(location.keys())),
+                ui.input_select("ubicacion", "Ubicación:", choices=list(location.keys())),
                 ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
-                ui.input_numeric("abstraction", "Absortancia: ", value=0.1, min = 0.1, max = 1.0, step = 0.1),
+                ui.input_select("abstrac","Absortancia:", choices=abstraccion),
             )
         return None
     
@@ -184,9 +178,9 @@ def server(input, output, session):
 
         caracteristicas = cargar_caracteristicas(place)
 
-        absortancia = 0.3
-        surface_tilt = location[input.option()]  # ubicacion
-        print(surface_tilt)
+        absortancia = abstraccion[input.abstrac()] #0.3
+        surface_tilt = location[input.ubicacion()]  # ubicacion
+        #print(surface_tilt)
         surface_azimuth = orientacion[input.orientacion()] #270
 
         dia = calculate_day(
@@ -199,7 +193,8 @@ def server(input, output, session):
             surface_tilt,
             surface_azimuth,
             timezone
-            )
+        )
+        
         plot_T_I(dia)
 
     @output
