@@ -64,14 +64,23 @@ abstraccion = {
 
 app_ui = ui.page_sidebar(
     ui.sidebar(
-        ui.input_radio_buttons(
-            "type",
-            "Sistema a realizar:",
-            {"1": "Capa homogénea", "2": "Modelo 2D"},
-        ),
         ui.output_ui("left_controls"),
     ),
-        ui.output_ui("controls_top"),
+        ui.layout_column_wrap(
+            ui.layout_columns(
+                ui.output_ui("controls_top"),
+            ),
+        
+                ui.value_box(
+                    "Tipo de sistema:",
+                    ui.input_select(  
+                        "type",  
+                        "",  
+                        {"1": "Capa homogénea", "2": "Modelo 2D"},  
+                    ),
+                ),
+
+        ),
     ui.layout_columns(
         ui.navset_card_underline(
             ui.nav_panel("Gráfica", ui.output_plot("grafica_mes")),

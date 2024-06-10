@@ -54,19 +54,21 @@ def controls_left(type,lugares,meses_dict, location, orientacion,abstraccion):
 def top_controls(type):
     if type == "1":
         return ui.layout_column_wrap(
-            3,# Número de columnas por fila
             ui.value_box(
-                "Número de Sistemas:",
-                ui.input_slider("sistemas", "", 1, 5, 1),
+                "Sistemas:",
+                ui.layout_columns(
+                    ui.input_slider("sistemas", "", 1, 5, 1),
+                ),
             ),
             ui.value_box(
                 "Condición:",
-                ui.input_select("Conditional", "", choices=["Sin aire acondicionado", "Con aire acondicionado"]),
-            ),
+                ui.layout_columns(
+                    ui.input_select("Conditional", "", choices=["Sin aire acondicionado", "Con aire acondicionado"]),
+                ),
+            ), 
         )
     elif type == "2":
         return ui.layout_column_wrap(
-            3,  # Número de columnas por fila
             ui.value_box(
                 "Número de Capas:",
                 ui.input_slider("capas", "", 1, 5, 1),
@@ -77,6 +79,8 @@ def top_controls(type):
             ),
         )
     return None
+
+
 
 def rigth_controls(type, materiales):
     if type == "1":
