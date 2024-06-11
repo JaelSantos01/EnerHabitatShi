@@ -40,51 +40,51 @@ orientacion = {
 }
 
 abstraccion = {
-    "Acero" : 0.45,
-    "Aluminio oxidado": 0.15,
-    "Aluminio pulido": 0.1,
-    "Asfalto nuevo": 0.95,
-    "Concreto": 0.7,
-    "Concreto claro o adocreto claro": 0.6,
-    "Impermeabilizante o pintura blanca": 0.2,
-    "Impermeabilizante o pintura blanca nueva": 0.15,
-    "Impermeabilizante o pintura negra": 0.9,
-    "Impermeabilizante o pintura negra mate nueva": 0.95,
-    "Impermeabilizante rojo terracota": 0.7,
-    "Ladrillo rojo": 0.65,
-    "Lámina galvanizada": 0.7,
-    "Lámina galvanizada brillante": 0.25,
-    "Pintura aluminio": 0.2,
-    "Pintura colores claros": 0.3,
-    "Pintura colores intermedios": 0.5,
-    "Pintura colores oscuros": 0.7,
-    "Recubrimiento elastomérico blanco": 0.3,
-    "Teja roja": 0.7,
+    "Aluminio pulido": "0.10",
+    #"Aluminio oxidado": 0.15,
+    "Impermeabilizante o pintura blanca nueva": "0.15",
+    "Impermeabilizante o pintura blanca": "0.20",
+    #"Pintura aluminio": 0.2,
+    "Lámina galvanizada brillante": "0.25",
+    #"Pintura colores claros": 0.3,
+    "Recubrimiento elastomérico blanco": "0.30",
+    "Acero" : "0.45",
+    "Pintura colores intermedios": "0.50",
+    "Concreto claro o adocreto claro": "0.60",
+    "Ladrillo rojo": "0.65",
+    "Impermeabilizante rojo terracota": "0.70",
+    #"Lámina galvanizada": 0.7,
+    #"Pintura colores oscuros": 0.7,
+    #"Teja roja": 0.7,
+    #"Concreto": 0.7,
+    "Impermeabilizante o pintura negra": "0.90",
+    "Asfalto nuevo": "0.95",
+    #"Impermeabilizante o pintura negra mate nueva": 0.95,
 }
 
 app_ui = ui.page_sidebar(
     ui.sidebar(
         ui.output_ui("left_controls"),
     ),
-        ui.layout_column_wrap(
-            ui.layout_columns(
-                ui.output_ui("controls_top"),
-            ),
-        
-                ui.value_box(
-                    "Tipo de sistema:",
-                    ui.input_select(  
-                        "type",  
-                        "",  
-                        {"1": "Capa homogénea", "2": "Modelo 2D"},  
-                    ),
-                ),
-
+    ui.layout_column_wrap(
+        ui.card(
+            ui.output_ui("controls_top"),
         ),
+        
+        ui.value_box(
+            "Tipo de sistema:",
+                ui.input_select(  
+                    "type",  
+                    "",  
+                    {"1": "Capa homogénea", "2": "Modelo 2D"},  
+                ),
+        ),
+    ),   
+    
     ui.layout_columns(
         ui.navset_card_underline(
             ui.nav_panel("Gráfica", ui.output_plot("grafica_mes")),
-            ui.nav_panel("Resultados", ui.output_plot("pendiente")),
+            ui.nav_panel("Resultados", ui.output_text("pendiente")),
             title="Datos Gráficados",
         ),
         ui.card(
@@ -137,8 +137,9 @@ def server(input, output, session):
         mes = meses_dict[input.periodo()]
 
         caracteristicas = cargar_caracteristicas(place)
-
-        absortancia = abstraccion[input.abstrac()] #0.3
+        valor_abstrac_str = abstraccion[input.abstrac()]
+        valor_abstrac_num = float(valor_abstrac_str)
+        absortancia = valor_abstrac_num #0.3
         surface_tilt = location[input.ubicacion()]  # ubicacion
         #print(surface_tilt)
         surface_azimuth = orientacion[input.orientacion()] #270
@@ -157,6 +158,18 @@ def server(input, output, session):
         
         plot_T_I(dia)
 
+    @output
+    @render.text
+    def pendiente():
+        lugar = input.place()
+        mes = input.periodo()
+        ubicacion = input.ubicacion()
+        orienta = input.orientacion()
+        abs = input.abstrac()
+        sistemas = input.sistemas()
+        condicion = input.Conditional()
+        tipo = input.type()
+        return f"Lugar: {lugar}, Mes: {mes}, Ubicacion: {ubicacion}, Orientacion: {orienta}, Absortancia: {abs}, Sistemas: {sistemas}, Condicion: {condicion}, Tipo: {tipo}"
 
 app = App(app_ui, server)
 

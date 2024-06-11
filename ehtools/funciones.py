@@ -32,6 +32,7 @@ def ruta(lugar):
     ruta = f"./data/{pa}_{es}_{ciudad}.epw"
     return ruta
 
+
 def controls_left(type,lugares,meses_dict, location, orientacion,abstraccion):
     if type == "1":
         return ui.TagList(
@@ -53,19 +54,9 @@ def controls_left(type,lugares,meses_dict, location, orientacion,abstraccion):
 
 def top_controls(type):
     if type == "1":
-        return ui.layout_column_wrap(
-            ui.value_box(
-                "Sistemas:",
-                ui.layout_columns(
-                    ui.input_slider("sistemas", "", 1, 5, 1),
-                ),
-            ),
-            ui.value_box(
-                "Condición:",
-                ui.layout_columns(
-                    ui.input_select("Conditional", "", choices=["Sin aire acondicionado", "Con aire acondicionado"]),
-                ),
-            ), 
+        return ui.TagList(
+            ui.input_numeric("sistemas", "Sistemas:", value=1, min=1, max=5),
+            ui.input_select("Conditional", "Condicion:", choices=["Sin aire acondicionado", "Con aire acondicionado"]), 
         )
     elif type == "2":
         return ui.layout_column_wrap(
@@ -89,7 +80,7 @@ def rigth_controls(type, materiales):
         )
     elif type == "2":
         return ui.TagList(
-            ui.HTML('<img src="http://www.enerhabitat.unam.mx/Cie/images/Muro-tipo1-modelo1.png" width="320" height="150">'),
+            ui.HTML('<img src="http://www.enerhabitat.unam.mx/Cie/images/Muro-tipo1-modelo1.png" width="240" height="90">'),
             ui.input_select("muro", "Muro:", choices=materiales),
             ui.layout_columns(
                 ui.input_numeric("e11", "e11", value=0.1),
@@ -108,14 +99,20 @@ def rigth_controls(type, materiales):
 
 
 def info_right(num, materiales):
-    campos_list = []
-    for i in range(num):
-        campos_list.append(
-            ui.TagList(
-                ui.layout_columns(
-                    ui.input_numeric(f"espesor_{i}", f"Espesor {i+1}:", value=0.1),
-                    ui.input_select(f"materiales_{i}", f"Material {i+1}:", choices=materiales)
+    if num > 5:
+        modal_content = "Solo se permiten hasta 5 sistemas constructivos."
+        modal = ui.modal(modal_content, title="Error", easy_close=True)
+        ui.modal_show(modal)
+    else:
+        campos_list = []
+        for i in range(num):
+            campos_list.append(
+                ui.TagList(
+                    ui.layout_columns(
+                        ui.input_numeric(f"espesor_{i}", f"Espesor {i+1}:", value=0.1),
+                        ui.input_select(f"materiales_{i}", f"Material {i+1}:", choices=materiales)
+                    )
                 )
             )
-        )
-    return campos_list
+        return campos_list
+
