@@ -4,6 +4,9 @@ from ehtools.diatipico import *
 from ehtools.plot import *
 from pathlib import Path
 from ehtools.funciones import *
+import pandas as pd
+import pvlib
+from pvlib import irradiance, location
 
 timezone = pytz.timezone('America/Mexico_City')
 app_dir = Path(__file__).parent
@@ -64,38 +67,38 @@ abstraccion = {
 
 app_ui = ui.page_sidebar(
     ui.sidebar(
-        ui.output_ui("left_controls"),
-    ),
-    
-    ui.accordion(
-        ui.accordion_panel(
-            "Selección",
-            ui.layout_column_wrap(
-                ui.output_ui("controls_top"),
-                ui.card(
+        ui.accordion(
+            ui.accordion_panel(
+                "Cambios",
+                ui.output_ui("left_controls"),
+            ),
+        ),
+        
+        ui.accordion(
+            ui.accordion_panel(
+                "Selección",
+                    ui.output_ui("controls_top"),
                         ui.input_select(  
                             "type",  
                             "Tipo de sistema:",  
                             {"1": "Capa homogénea", "2": "Modelo 2D"},  
                         ),
-                    class_="type",
-                ),
+            ),
+        ),
+
+        ui.accordion(
+            ui.accordion_panel(
+                "Datos",
+                ui.output_ui("controls_rigth")
             ),
         ),
     ),
-    
-    ui.layout_columns(
         ui.navset_card_underline(
             ui.nav_panel("Gráfica", ui.output_plot("grafica_mes")),
             ui.nav_panel("Resultados", ui.output_text("pendiente")),
+            ui.nav_panel("Datos", ui.output_data_frame("daydata")),
             title="Datos Gráficados",
         ),
-        ui.card(
-            ui.card_header("Datos:"),
-            ui.output_ui("controls_rigth")
-        ),
-        col_widths=[9, 3],
-    ),
     
     ui.include_css(app_dir / "styles.css"),
     title="Ener-Habitat Phy",
@@ -174,6 +177,36 @@ def server(input, output, session):
         condicion = input.Conditional()
         tipo = input.type()
         return f"Lugar: {lugar}, Mes: {mes}, Ubicacion: {ubicacion}, Orientacion: {orienta}, Absortancia: {abs}, Sistemas: {sistemas}, Condicion: {condicion}, Tipo: {tipo}"
+
+    @output
+    @render.data_frame
+    def daydata():
+        place = input.place()
+        ruta_epw = ruta(place)
+        mes = meses_dict[input.periodo()]
+
+        caracteristicas = cargar_caracteristicas(place)
+        valor_abstrac_str = abstraccion[input.abstrac()]
+        valor_abstrac_num = float(valor_abstrac_str)
+        absortancia = valor_abstrac_num #0.3
+        surface_tilt = location[input.ubicacion()]  # ubicacion
+        surface_azimuth = orientacion[input.orientacion()] #270
+
+        # Llamada a calculate_day() y retorno del DataFrame resultante
+        result = calculate_day(
+            ruta_epw,
+            caracteristicas['lat'],
+            caracteristicas['lon'],
+            caracteristicas['alt'],
+            mes,
+            absortancia,
+            surface_tilt,
+            surface_azimuth,
+            timezone
+        )
+        
+        return result
+
 
 app = App(app_ui, server)
 

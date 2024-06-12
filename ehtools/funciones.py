@@ -54,24 +54,14 @@ def controls_left(type,lugares,meses_dict, location, orientacion,abstraccion):
 
 def top_controls(type):
     if type == "1":
-        return ui.layout_column_wrap(
-            ui.card(
-                ui.input_numeric("sistemas", "Número de sistemas:", value=1, min=1, max=5),  
-            class_="unique-card1",
-            ),
-            ui.card(
-                ui.input_select("Conditional", "Condición:", choices=["Sin aire acondicionado", "Con aire acondicionado"]),  
-            class_="unique-card",
-            ), 
+        return ui.TagList(
+            ui.input_numeric("sistemas", "Número de sistemas:", value=1, min=1, max=5),  
+            ui.input_select("Conditional", "Condición:", choices=["Sin aire acondicionado", "Con aire acondicionado"]),  
         )
     elif type == "2":
-        return ui.layout_column_wrap(
-            ui.card(
-                ui.input_slider("capas", "Número de capas:", 1, 5, 1),
-            ),
-            ui.card(
-                ui.input_select("Conditional", "Condición:", choices=["Sin aire acondicionado", "Con aire acondicionado"]),
-            ),
+        return ui.TagList(
+            ui.input_slider("capas", "Número de capas:", 1, 5, 1),
+            ui.input_select("Conditional", "Condición:", choices=["Sin aire acondicionado", "Con aire acondicionado"]),
         )
     return None
 

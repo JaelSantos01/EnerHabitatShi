@@ -129,45 +129,47 @@ def calculate_dt(df):
     return df
 
 
-def calculate_day(f_epw,lat,lon,altitude,month,absortance,surface_tilt,surface_azimuth,timezone):
-    epw = read_epw(f_epw,alias=True,year='2024',warns=False)
+def calculate_day(f_epw, lat, lon, altitude, month, absortance, surface_tilt, surface_azimuth, timezone):
+    epw = read_epw(f_epw, alias=True, year='2024', warns=False)
     ho = 13.
-    dia = '15'
+    day = '15'
     if surface_tilt == 0:
         LWR = 3.9
     else:
         LWR = 0.
-    f1 = f'2024-{month}-{dia} 00:00'
-    f2 = f'2024-{month}-{dia} 23:59'
-    dia = pd.date_range(start=f1, end=f2, freq='1s',tz=timezone)
-    location = pvlib.location.Location(latitude = lat, 
-                                   longitude=lon, 
-                                   altitude=altitude,
-                                   tz=timezone,
-                                   name='Temixco,Mor')
+    f1 = f'2024-{month}-{day} 00:00'
+    f2 = f'2024-{month}-{day} 23:59'
+    date_range = pd.date_range(start=f1, end=f2, freq='1s', tz=timezone)
+    location = pvlib.location.Location(latitude=lat, 
+                                       longitude=lon, 
+                                       altitude=altitude,
+                                       tz=timezone,
+                                       name='Temixco, Mor')
 
-    dia = location.get_solarposition(dia)
-    del dia['apparent_zenith']
-    del dia['apparent_elevation']
+    solar_position = location.get_solarposition(date_range)
+    del solar_position['apparent_zenith']
+    del solar_position['apparent_elevation']
 
-    sunrise,_ = get_sunrise_sunset_times(dia)
-    tTmax,Tmin,Tmax = calculate_tTmaxTminTmax(month,epw)
-    # # Calcular la temperatura ambiente y agregarla al DataFrame
-    dia = temperature_model(dia, Tmin, Tmax, sunrise, tTmax)
-    # # Agrega Ig, Ib, Id a dia 
-    dia = add_IgIbId_Tn(dia,epw,month,f1,f2,timezone)
+    sunrise, _ = get_sunrise_sunset_times(solar_position)
+    tTmax, Tmin, Tmax = calculate_tTmaxTminTmax(month, epw)
+    
+    # Calcular la temperatura ambiente y agregarla al DataFrame
+    solar_position = temperature_model(solar_position, Tmin, Tmax, sunrise, tTmax)
+    
+    # Agrega Ig, Ib, Id a solar_position 
+    solar_position = add_IgIbId_Tn(solar_position, epw, month, f1, f2, timezone)
     total_irradiance = pvlib.irradiance.get_total_irradiance(
         surface_tilt=surface_tilt,
         surface_azimuth=surface_azimuth,
-        dni=dia['Ib'],
-        ghi=dia['Ig'],
-        dhi=dia['Id'],
-        solar_zenith=dia['zenith'],
-        solar_azimuth=dia['azimuth']
+        dni=solar_position['Ib'],
+        ghi=solar_position['Ig'],
+        dhi=solar_position['Id'],
+        solar_zenith=solar_position['zenith'],
+        solar_azimuth=solar_position['azimuth']
     )
-    dia['Is'] = total_irradiance.poa_global
-    dia['Tsa'] = dia.Ta + dia.Is*absortance/ho - LWR
-    DeltaTa= dia.Ta.max() - dia.Ta.min()
-
-    dia['DeltaTn'] = calculate_DtaTn(DeltaTa)
-    return dia
+    solar_position['Is'] = total_irradiance.poa_global
+    solar_position['Tsa'] = solar_position.Ta + solar_position.Is * absortance / ho - LWR
+    DeltaTa = solar_position.Ta.max() - solar_position.Ta.min()
+    solar_position['DeltaTn'] = calculate_DtaTn(DeltaTa)
+    
+    return solar_position
