@@ -66,20 +66,22 @@ app_ui = ui.page_sidebar(
     ui.sidebar(
         ui.output_ui("left_controls"),
     ),
-    ui.layout_column_wrap(
-        ui.card(
-            ui.output_ui("controls_top"),
-        ),
-        
-        ui.value_box(
-            "Tipo de sistema:",
-                ui.input_select(  
-                    "type",  
-                    "",  
-                    {"1": "Capa homogénea", "2": "Modelo 2D"},  
+    
+    ui.accordion(
+        ui.accordion_panel(
+            "",
+            ui.layout_column_wrap(
+                ui.output_ui("controls_top"),
+                ui.card(
+                        ui.input_select(  
+                            "type",  
+                            "Tipo de sistema:",  
+                            {"1": "Capa homogénea", "2": "Modelo 2D"},  
+                        ),
+                ),
                 ),
         ),
-    ),   
+    ),
     
     ui.layout_columns(
         ui.navset_card_underline(
@@ -93,6 +95,7 @@ app_ui = ui.page_sidebar(
         ),
         col_widths=[9, 3],
     ),
+    
     ui.include_css(app_dir / "styles.css"),
     title="Ener-Habitat Phy",
     fillable=True,
