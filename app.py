@@ -69,7 +69,7 @@ app_ui = ui.page_sidebar(
     
     ui.accordion(
         ui.accordion_panel(
-            "",
+            "Selección",
             ui.layout_column_wrap(
                 ui.output_ui("controls_top"),
                 ui.card(
@@ -78,8 +78,9 @@ app_ui = ui.page_sidebar(
                             "Tipo de sistema:",  
                             {"1": "Capa homogénea", "2": "Modelo 2D"},  
                         ),
+                    class_="type",
                 ),
-                ),
+            ),
         ),
     ),
     

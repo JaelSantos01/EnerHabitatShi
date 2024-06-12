@@ -56,19 +56,21 @@ def top_controls(type):
     if type == "1":
         return ui.layout_column_wrap(
             ui.card(
-              ui.input_numeric("sistemas", "Sistemas:", value=1, min=1, max=5),  
+                ui.input_numeric("sistemas", "Número de sistemas:", value=1, min=1, max=5),  
+            class_="unique-card1",
             ),
             ui.card(
-              ui.input_select("Conditional", "Condicion:", choices=["Sin aire acondicionado", "Con aire acondicionado"]),  
+                ui.input_select("Conditional", "Condición:", choices=["Sin aire acondicionado", "Con aire acondicionado"]),  
+            class_="unique-card",
             ), 
         )
     elif type == "2":
         return ui.layout_column_wrap(
             ui.card(
-                ui.input_slider("capas", "Numero de capas:", 1, 5, 1),
+                ui.input_slider("capas", "Número de capas:", 1, 5, 1),
             ),
             ui.card(
-                ui.input_select("Conditional", "Condicion:", choices=["Sin aire acondicionado", "Con aire acondicionado"]),
+                ui.input_select("Conditional", "Condición:", choices=["Sin aire acondicionado", "Con aire acondicionado"]),
             ),
         )
     return None
@@ -83,7 +85,7 @@ def rigth_controls(type, materiales):
     elif type == "2":
         return ui.TagList(
             ui.HTML('<img src="http://www.enerhabitat.unam.mx/Cie/images/Muro-tipo1-modelo1.png" width="240" height="90">'),
-            ui.input_select("muro", "Muro:", choices=materiales),
+            ui.input_select("muro", "Material:", choices=materiales),
             ui.layout_columns(
                 ui.input_numeric("e11", "e11", value=0.1),
                 ui.input_numeric("a11", "a11", value=0.1),
@@ -101,7 +103,7 @@ def rigth_controls(type, materiales):
 
 
 def info_right(num, materiales):
-    if num > 5:
+    if num > 5 or num < 1:
         modal_content = "Solo se permiten hasta 5 sistemas constructivos."
         modal = ui.modal(modal_content, title="Error", easy_close=True)
         ui.modal_show(modal)
