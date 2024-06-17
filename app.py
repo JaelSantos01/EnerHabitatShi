@@ -1,5 +1,4 @@
 from shiny import App, ui, render, reactive
-import pytz
 from ehtools.diatipico import *
 from ehtools.plot import *
 from pathlib import Path
@@ -96,7 +95,8 @@ app_ui = ui.page_sidebar(
         ui.navset_card_underline(
             ui.nav_panel("Gráfica", ui.output_plot("grafica_mes")),
             ui.nav_panel("Resultados", ui.output_text("pendiente")),
-            ui.nav_panel("Datos", ui.output_data_frame("daydata")),
+            ui.nav_panel("Datos", ui.output_data_frame("daydata"),
+            ui.download_button("downloadData", "Download")),
             title="Datos Gráficados",
         ),
     
@@ -193,7 +193,7 @@ def server(input, output, session):
         surface_azimuth = orientacion[input.orientacion()] #270
 
         # Llamada a calculate_day() y retorno del DataFrame resultante
-        result = calculate_day(
+        data = calculate_day(
             ruta_epw,
             caracteristicas['lat'],
             caracteristicas['lon'],
@@ -204,10 +204,24 @@ def server(input, output, session):
             surface_azimuth,
             timezone
         )
+
+        # Convertir los datos a DataFrame de Pandas
+        df = pd.DataFrame(data)
         
-        return result
+        return df
+    
+    @output
+    @render.download(filename="solar_data.csv")
+    async def downloadData():
+        # Obtener el DataFrame directamente desde daydata()
+        df = daydata()
 
-
+        # Convertir el DataFrame a CSV
+        csv_data = df.to_csv(index=False).encode()
+        
+        # Retornar los datos codificados en bytes para la descarga
+        return csv_data
+    
 app = App(app_ui, server)
 
 if __name__ == "__main__":
