@@ -193,7 +193,7 @@ def server(input, output, session):
         surface_azimuth = orientacion[input.orientacion()] #270
 
         # Llamada a calculate_day() y retorno del DataFrame resultante
-        data = calculate_day(
+        result = calculate_day(
             ruta_epw,
             caracteristicas['lat'],
             caracteristicas['lon'],
@@ -205,22 +205,21 @@ def server(input, output, session):
             timezone
         )
 
-        # Convertir los datos a DataFrame de Pandas
-        df = pd.DataFrame(data)
-        
-        return df
-    
+        return result
+
     @output
     @render.download(filename="solar_data.csv")
     async def downloadData():
-        # Obtener el DataFrame directamente desde daydata()
-        df = daydata()
+        df_coroutine = daydata()  # Llama a la función asíncrona daydata()
 
-        # Convertir el DataFrame a CSV
+        # Espera a que se complete la función asíncrona y obtén el DataFrame resultante
+        df = await df_coroutine
+
+        # Convierte el DataFrame a CSV y genera los datos
         csv_data = df.to_csv(index=False).encode()
-        
-        # Retornar los datos codificados en bytes para la descarga
+
         return csv_data
+
     
 app = App(app_ui, server)
 

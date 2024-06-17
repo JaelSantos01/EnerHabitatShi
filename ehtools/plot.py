@@ -1,32 +1,36 @@
 import matplotlib.pyplot as plt
 from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
 plt.rcParams['timezone'] = 'America/Mexico_City'    
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 
 def plot_T_I(dia):
-    fig, ax = plt.subplots(2,figsize=(10,6),sharex=True)
+    # Crear una figura con subplots
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True)
 
+    # Datos filtrados
     df = dia.iloc[::600]
-    ax[0].plot(df.Ta, 'k-',label='Ta')
-    # ax[0].plot(df.Tn, 'g-',label='Tn')
-    ax[0].plot(df.Tsa,'r-',label='Tsa')
-    ax[0].fill_between(df.index,
-                    df.Tn + df.DeltaTn,
-                    df.Tn - df.DeltaTn,color='green',alpha=0.3)
 
-    ax[1].plot(df.Ig,label='Ig')
-    ax[1].plot(df.Ib,label='Ib')
-    ax[1].plot(df.Id,label='Id')
-    ax[1].plot(df.Is,label='Is')
+    # Subplot 1: Temperaturas y área sombreada
+    fig.add_trace(go.Scatter(x=df.index, y=df['Ta'], mode='lines', name='Ta', line=dict(color='black')), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df['Tsa'], mode='lines', name='Tsa', line=dict(color='red')), row=1, col=1)
+    # Las áreas sombreadas en plotly pueden ser añadidas usando 'fill' en go.Scatter
+    fig.add_trace(go.Scatter(x=df.index, y=df['Tn'] + df['DeltaTn'], mode='lines',showlegend=False , line=dict(color='rgba(0,0,0,0)')),
+                row=1, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df['Tn'] - df['DeltaTn'], mode='lines',showlegend=False , fill='tonexty', line=dict(color='rgba(0,0,0,0)'), fillcolor='rgba(0,255,0,0.3)'),
+                row=1, col=1)
 
-    ax[0].set_ylabel('Temperatura [$^oC$]')
-    ax[1].set_ylabel('Irradiancia [$W/m^2$]')
+    # Subplot 2: Irradiancia
+    fig.add_trace(go.Scatter(x=df.index, y=df['Ig'], mode='lines', name='Ig'), row=2, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df['Ib'], mode='lines', name='Ib'), row=2, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df['Id'], mode='lines', name='Id'), row=2, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df['Is'], mode='lines', name='Is'), row=2, col=1)
 
-    locator = AutoDateLocator()
-    formatter = ConciseDateFormatter(locator)
-    ax[1].xaxis.set_major_formatter(formatter)
+    # Configuración adicional
+    fig.update_layout(height=800, width=1000)
+    fig.update_yaxes(title_text="Temperatura [°C]", row=1, col=1)
+    fig.update_yaxes(title_text="Irradiancia [W/m²]", row=2, col=1)
 
-
-    for a in ax:
-        a.legend()
-        a.grid()
-    fig.tight_layout()
+    # Mostrar figura
+    fig.show()

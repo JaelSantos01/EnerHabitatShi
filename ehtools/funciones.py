@@ -34,13 +34,15 @@ def ruta(lugar):
 
 
 def controls_left(type,lugares,meses_dict, location, orientacion,abstraccion):
+    valor_inicial = list(abstraccion.values())[0]
     if type == "1":
         return ui.TagList(
             ui.input_select("place", "Lugar:", choices=lugares),
             ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
             ui.input_select("ubicacion", "Ubicación:", choices=list(location.keys())),
             ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
-            ui.input_select("abstrac","Absortancia:", choices=abstraccion),
+            ui.input_select("abstrac","Absortancia:", choices=list(abstraccion.keys())),
+            ui.input_numeric("abstrac_numeric", "Absortancia:", value = valor_inicial),
         )
     elif type == "2":
         return ui.TagList(
@@ -48,7 +50,8 @@ def controls_left(type,lugares,meses_dict, location, orientacion,abstraccion):
             ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
             ui.input_select("ubicacion", "Ubicación:", choices=list(location.keys())),
             ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
-            ui.input_select("abstrac","Absortancia:", choices=abstraccion),
+            ui.input_select("abstrac","Absortancia:", choices=list(abstraccion.keys())),
+            ui.input_numeric("abstrac_numeric", "Absortancia:", value = valor_inicial),
         )
     return None
 
@@ -74,7 +77,7 @@ def rigth_controls(type, materiales):
         )
     elif type == "2":
         return ui.TagList(
-            ui.HTML('<img src="http://www.enerhabitat.unam.mx/Cie/images/Muro-tipo1-modelo1.png" width="240" height="90">'),
+            ui.HTML('<img src="http://www.enerhabitat.unam.mx/Cie/images/Muro-tipo1-modelo1.png" width="200" height="90">'),
             ui.input_select("muro", "Material:", choices=materiales),
             ui.layout_columns(
                 ui.input_numeric("e11", "e11", value=0.1),
