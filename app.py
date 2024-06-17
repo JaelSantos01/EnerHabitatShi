@@ -205,7 +205,7 @@ def server(input, output, session):
             timezone
         )
 
-        return result
+        return result[::3600]
 
     @output
     @render.download(filename="solar_data.csv")

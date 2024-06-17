@@ -53,14 +53,14 @@ def get_sunrise_sunset_times(df):
     
     return Ho, Hi
     
-def calculate_tTmaxTminTmax(mes,epw):
+def calculate_tTmaxTminTmax(month,epw):
     # epw = read_epw(f_epw,alias=True,year='2024')
-    epw_mes = epw.loc[epw.index.month==int(mes)]
+    epw_mes = epw.loc[epw.index.month==int(month)]
     hora_minutos = epw_mes.resample('D').To.idxmax()
     hora = hora_minutos.dt.hour
     minuto = hora_minutos.dt.minute
     tTmax = hora.mean() +  minuto.mean()/60 
-    epw_mes = epw.loc[epw.index.month==int(mes)]
+    epw_mes = epw.loc[epw.index.month==int(month)]
     horas  = epw_mes.resample('D').To.idxmax().resample('ME').mean().dt.hour 
     minutos = epw_mes.resample('D').To.idxmax().resample('ME').mean().dt.minute
     tTmax = horas.iloc[0]+ minutos.iloc[0]/60 
