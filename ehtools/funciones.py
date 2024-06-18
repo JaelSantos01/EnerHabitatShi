@@ -33,16 +33,15 @@ def ruta(lugar):
     return ruta
 
 
-def controls_left(type,lugares,meses_dict, location, orientacion,abstraccion):
-    valor_inicial = list(abstraccion.values())[0]
+def controls_left(type,lugares,meses_dict, location, orientacion,absortance):
     if type == "1":
         return ui.TagList(
             ui.input_select("place", "Lugar:", choices=lugares),
             ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
             ui.input_select("ubicacion", "Ubicación:", choices=list(location.keys())),
             ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
-            ui.input_select("abstrac","Absortancia:", choices=list(abstraccion.keys())),
-            ui.input_numeric("abstrac_numeric", "Absortancia:", value = valor_inicial),
+            ui.input_select("abstrac","Absortancia:", choices=list(absortance.keys())),
+            ui.output_ui("absortance"),
         )
     elif type == "2":
         return ui.TagList(
@@ -50,10 +49,15 @@ def controls_left(type,lugares,meses_dict, location, orientacion,abstraccion):
             ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
             ui.input_select("ubicacion", "Ubicación:", choices=list(location.keys())),
             ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
-            ui.input_select("abstrac","Absortancia:", choices=list(abstraccion.keys())),
-            ui.input_numeric("abstrac_numeric", "Absortancia:", value = valor_inicial),
+            ui.input_select("abstrac","Absortancia:", choices=list(absortance.keys())),
+            ui.output_ui("absortance"),
         )
     return None
+
+def absortance_value(value):
+        return ui.TagList(
+            ui.input_numeric("absortance_value", "", value=value, min=0.10, max=1.0)
+        )
 
 def top_controls(type):
     if type == "1":

@@ -4,8 +4,10 @@ from ehtools.plot import *
 from pathlib import Path
 from ehtools.funciones import *
 import pandas as pd
-import pvlib
 from pvlib import irradiance, location
+from shinywidgets import output_widget, render_plotly
+import random
+from datetime import date
 
 timezone = pytz.timezone('America/Mexico_City')
 app_dir = Path(__file__).parent
@@ -41,27 +43,27 @@ orientacion = {
     "Noroeste": 315,
 }
 
-abstraccion = {
-    "Aluminio pulido": "0.10",
-    #"Aluminio oxidado": 0.15,
-    "Impermeabilizante o pintura blanca nueva": "0.15",
-    "Impermeabilizante o pintura blanca": "0.20",
-    #"Pintura aluminio": 0.2,
-    "Lámina galvanizada brillante": "0.25",
-    #"Pintura colores claros": 0.3,
-    "Recubrimiento elastomérico blanco": "0.30",
-    "Acero" : "0.45",
-    "Pintura colores intermedios": "0.50",
-    "Concreto claro o adocreto claro": "0.60",
-    "Ladrillo rojo": "0.65",
-    "Impermeabilizante rojo terracota": "0.70",
-    #"Lámina galvanizada": 0.7,
-    #"Pintura colores oscuros": 0.7,
-    #"Teja roja": 0.7,
-    #"Concreto": 0.7,
-    "Impermeabilizante o pintura negra": "0.90",
-    "Asfalto nuevo": "0.95",
-    #"Impermeabilizante o pintura negra mate nueva": 0.95,
+Absorbance = {
+    "Aluminio pulido": 0.10,
+    "Aluminio oxidado": 0.15,
+    "Impermeabilizante o pintura blanca nueva": 0.15,
+    "Impermeabilizante o pintura blanca": 0.20,
+    "Pintura aluminio": 0.2,
+    "Lámina galvanizada brillante": 0.25,
+    "Pintura colores claros": 0.3,
+    "Recubrimiento elastomérico blanco": 0.30,
+    "Acero" : 0.45,
+    "Pintura colores intermedios": 0.50,
+    "Concreto claro o adocreto claro": 0.60,
+    "Ladrillo rojo": 0.65,
+    "Impermeabilizante rojo terracota": 0.70,
+    "Lámina galvanizada": 0.7,
+    "Pintura colores oscuros": 0.7,
+    "Teja roja": 0.7,
+    "Concreto": 0.7,
+    "Impermeabilizante o pintura negra": 0.90,
+    "Asfalto nuevo": 0.95,
+    "Impermeabilizante o pintura negra mate nueva": 0.95,
 }
 
 app_ui = ui.page_sidebar(
@@ -93,9 +95,9 @@ app_ui = ui.page_sidebar(
         ),
     ),
         ui.navset_card_underline(
-            ui.nav_panel("Gráfica", ui.output_plot("grafica_mes")),
+            ui.nav_panel("Gráfica", output_widget("grafica_mes")),
             ui.nav_panel("Resultados", ui.output_text("pendiente")),
-            ui.nav_panel("Datos", ui.output_data_frame("daydata"),
+            ui.nav_panel("Datos", ui.output_data_frame("get_day_data"),
             ui.download_button("downloadData", "Download")),
             title="Datos Gráficados",
         ),
@@ -115,7 +117,14 @@ def server(input, output, session):
                     meses_dict, 
                     location, 
                     orientacion, 
-                    abstraccion)
+                    Absorbance)
+    
+    @output
+    @render.ui
+    def absortance():
+        selected = input.abstrac()
+        value = Absorbance.get(selected, 0.10)
+        return absortance_value(value)
     
     @output
     @render.ui
@@ -136,19 +145,14 @@ def server(input, output, session):
         return info_right(num, materiales)
 
     @output
-    @render.plot
+    @render_plotly
     def grafica_mes():
         place = input.place()
         ruta_epw = ruta(place)
-        # epw = read_epw(ruta_epw, year=2024, alias=True)
         mes = meses_dict[input.periodo()]
-
         caracteristicas = cargar_caracteristicas(place)
-        valor_abstrac_str = abstraccion[input.abstrac()]
-        valor_abstrac_num = float(valor_abstrac_str)
-        absortancia = valor_abstrac_num #0.3
+        absortancia = input.absortance_value() #0.3
         surface_tilt = location[input.ubicacion()]  # ubicacion
-        #print(surface_tilt)
         surface_azimuth = orientacion[input.orientacion()] #270
 
         dia = calculate_day(
@@ -163,7 +167,8 @@ def server(input, output, session):
             timezone
         )
         
-        plot_T_I(dia)
+        fig = plot_T_I(dia)
+        return fig
 
     @output
     @render.text
@@ -180,47 +185,57 @@ def server(input, output, session):
 
     @output
     @render.data_frame
-    def daydata():
-        place = input.place()
-        ruta_epw = ruta(place)
-        mes = meses_dict[input.periodo()]
+    def get_day_data():
+            place = input.place()
+            ruta_epw = ruta(place)  # Asumiendo que ruta() es una función definida correctamente
+            mes = meses_dict[input.periodo()]  # Asumiendo que meses_dict está definido
+            caracteristicas = cargar_caracteristicas(place)  # Asumiendo que cargar_caracteristicas() está definido
+            absortancia = Absorbance[input.abstrac()]  # Asumiendo que Absorbance está definido y contiene las absortancias
+            surface_tilt = location[input.ubicacion()]  # Asumiendo que location() está definido
+            surface_azimuth = orientacion[input.orientacion()]  # Asumiendo que orientacion() está definido
 
-        caracteristicas = cargar_caracteristicas(place)
-        valor_abstrac_str = abstraccion[input.abstrac()]
-        valor_abstrac_num = float(valor_abstrac_str)
-        absortancia = valor_abstrac_num #0.3
-        surface_tilt = location[input.ubicacion()]  # ubicacion
-        surface_azimuth = orientacion[input.orientacion()] #270
+            # Llamada a calculate_day() y retorno del DataFrame resultante
+            result = calculate_day(
+                ruta_epw,
+                caracteristicas['lat'],
+                caracteristicas['lon'],
+                caracteristicas['alt'],
+                mes,
+                absortancia,
+                surface_tilt,
+                surface_azimuth,
+                timezone
+            )
+
+            return result[::3600] 
+
+    @render.download
+    async def downloadData():
+        place = input.place()
+        ruta_epw = ruta(place)  # Asumiendo que ruta() es una función definida correctamente
+        caracteristicas = cargar_caracteristicas(place)  # Asumiendo que cargar_caracteristicas() está definido
+        surface_tilt = location[input.ubicacion()]  # Asumiendo que location() está definido
+        surface_azimuth = orientacion[input.orientacion()]  # Asumiendo que orientacion() está definido
 
         # Llamada a calculate_day() y retorno del DataFrame resultante
-        result = calculate_day(
+        df = calculate_day(
             ruta_epw,
             caracteristicas['lat'],
             caracteristicas['lon'],
             caracteristicas['alt'],
-            mes,
-            absortancia,
+            meses_dict[input.periodo()],
+            Absorbance[input.abstrac()],
             surface_tilt,
             surface_azimuth,
             timezone
         )
-
-        return result[::3600]
-
-    @output
-    @render.download(filename="solar_data.csv")
-    async def downloadData():
-        df_coroutine = daydata()  # Llama a la función asíncrona daydata()
-
-        # Espera a que se complete la función asíncrona y obtén el DataFrame resultante
-        df = await df_coroutine
-
+    
         # Convierte el DataFrame a CSV y genera los datos
         csv_data = df.to_csv(index=False).encode()
 
         return csv_data
 
-    
+
 app = App(app_ui, server)
 
 if __name__ == "__main__":
