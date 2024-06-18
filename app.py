@@ -6,7 +6,7 @@ from ehtools.funciones import *
 import pandas as pd
 from pvlib import irradiance, location
 from shinywidgets import output_widget, render_plotly
-import random
+from flask import Response
 from datetime import date
 
 timezone = pytz.timezone('America/Mexico_City')
@@ -95,7 +95,8 @@ app_ui = ui.page_sidebar(
         ),
     ),
         ui.navset_card_underline(
-            ui.nav_panel("Gráfica", output_widget("grafica_mes")),
+            ui.nav_panel("Temperaturas", output_widget("grafica_mes")),
+            ui.nav_panel("Radiación", output_widget("grafica_duplicada")),
             ui.nav_panel("Resultados", ui.output_text("pendiente")),
             ui.nav_panel("Datos", ui.output_data_frame("get_day_data"),
             ui.download_button("downloadData", "Download")),
@@ -147,6 +148,32 @@ def server(input, output, session):
     @output
     @render_plotly
     def grafica_mes():
+        place = input.place()
+        ruta_epw = ruta(place)
+        mes = meses_dict[input.periodo()]
+        caracteristicas = cargar_caracteristicas(place)
+        absortancia = input.absortance_value() #0.3
+        surface_tilt = location[input.ubicacion()]  # ubicacion
+        surface_azimuth = orientacion[input.orientacion()] #270
+
+        dia = calculate_day(
+            ruta_epw,
+            caracteristicas['lat'],
+            caracteristicas['lon'],
+            caracteristicas['alt'],
+            mes,
+            absortancia,
+            surface_tilt,
+            surface_azimuth,
+            timezone
+        )
+        
+        fig = plot_T_I(dia)
+        return fig
+
+    @output
+    @render_plotly
+    def grafica_duplicada():
         place = input.place()
         ruta_epw = ruta(place)
         mes = meses_dict[input.periodo()]
@@ -230,9 +257,10 @@ def server(input, output, session):
             timezone
         )
         
-        print(df)
+        data = df[::3600]
+        print(data)
         
-        return df[::3600] 
+        return data
 
 
 
