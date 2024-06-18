@@ -1,4 +1,4 @@
-from shiny import App, ui, render, reactive
+from shiny import App, ui, render,  reactive
 from ehtools.diatipico import *
 from ehtools.plot import *
 from pathlib import Path
@@ -6,6 +6,18 @@ from ehtools.funciones import *
 import pandas as pd
 import pvlib
 from pvlib import irradiance, location
+from shinywidgets import output_widget, render_plotly
+
+
+
+
+
+
+@render.text
+def txt():
+    return f"n*2 is {input.n() * 2}"
+
+
 
 timezone = pytz.timezone('America/Mexico_City')
 app_dir = Path(__file__).parent
@@ -93,7 +105,7 @@ app_ui = ui.page_sidebar(
         ),
     ),
         ui.navset_card_underline(
-            ui.nav_panel("Gráfica", ui.output_plot("grafica_mes")),
+            ui.nav_panel("Gráfica", output_widget("grafica_mes")),
             ui.nav_panel("Resultados", ui.output_text("pendiente")),
             ui.nav_panel("Datos", ui.output_data_frame("daydata"),
             ui.download_button("downloadData", "Download")),
@@ -104,7 +116,6 @@ app_ui = ui.page_sidebar(
     title="Ener-Habitat Phy",
     fillable=True,
 )
-
 def server(input, output, session):
     @output
     @render.ui
@@ -136,7 +147,7 @@ def server(input, output, session):
         return info_right(num, materiales)
 
     @output
-    @render.plot
+    @render_plotly
     def grafica_mes():
         place = input.place()
         ruta_epw = ruta(place)
@@ -162,9 +173,10 @@ def server(input, output, session):
             surface_azimuth,
             timezone
         )
-        
-        plot_T_I(dia)
 
+
+        fig = plot_T_I(dia)
+        return fig
     @output
     @render.text
     def pendiente():

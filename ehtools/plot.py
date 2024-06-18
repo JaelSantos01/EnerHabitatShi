@@ -1,6 +1,3 @@
-import matplotlib.pyplot as plt
-from matplotlib.dates import ConciseDateFormatter, AutoDateLocator
-plt.rcParams['timezone'] = 'America/Mexico_City'    
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -33,4 +30,4 @@ def plot_T_I(dia):
     fig.update_yaxes(title_text="Irradiancia [W/m²]", row=2, col=1)
 
     # Mostrar figura
-    fig.show()
+    return fig
