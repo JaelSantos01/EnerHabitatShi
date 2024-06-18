@@ -187,14 +187,13 @@ def server(input, output, session):
     @render.data_frame
     def get_day_data():
             place = input.place()
-            ruta_epw = ruta(place)  # Asumiendo que ruta() es una función definida correctamente
-            mes = meses_dict[input.periodo()]  # Asumiendo que meses_dict está definido
-            caracteristicas = cargar_caracteristicas(place)  # Asumiendo que cargar_caracteristicas() está definido
-            absortancia = Absorbance[input.abstrac()]  # Asumiendo que Absorbance está definido y contiene las absortancias
-            surface_tilt = location[input.ubicacion()]  # Asumiendo que location() está definido
-            surface_azimuth = orientacion[input.orientacion()]  # Asumiendo que orientacion() está definido
+            ruta_epw = ruta(place)  
+            mes = meses_dict[input.periodo()]  
+            caracteristicas = cargar_caracteristicas(place)  
+            absortancia = Absorbance[input.abstrac()]  
+            surface_tilt = location[input.ubicacion()] 
+            surface_azimuth = orientacion[input.orientacion()]  
 
-            # Llamada a calculate_day() y retorno del DataFrame resultante
             result = calculate_day(
                 ruta_epw,
                 caracteristicas['lat'],
@@ -206,34 +205,35 @@ def server(input, output, session):
                 surface_azimuth,
                 timezone
             )
-
+            
             return result[::3600] 
 
-    @render.download
-    async def downloadData():
+    @render.download(filename="data.csv")
+    def downloadData():
         place = input.place()
-        ruta_epw = ruta(place)  # Asumiendo que ruta() es una función definida correctamente
-        caracteristicas = cargar_caracteristicas(place)  # Asumiendo que cargar_caracteristicas() está definido
-        surface_tilt = location[input.ubicacion()]  # Asumiendo que location() está definido
-        surface_azimuth = orientacion[input.orientacion()]  # Asumiendo que orientacion() está definido
+        ruta_epw = ruta(place)  
+        mes = meses_dict[input.periodo()]  
+        caracteristicas = cargar_caracteristicas(place)  
+        absortancia = Absorbance[input.abstrac()]  
+        surface_tilt = location[input.ubicacion()] 
+        surface_azimuth = orientacion[input.orientacion()]  
 
-        # Llamada a calculate_day() y retorno del DataFrame resultante
         df = calculate_day(
             ruta_epw,
             caracteristicas['lat'],
             caracteristicas['lon'],
             caracteristicas['alt'],
-            meses_dict[input.periodo()],
-            Absorbance[input.abstrac()],
+            mes,
+            absortancia,
             surface_tilt,
             surface_azimuth,
             timezone
         )
-    
-        # Convierte el DataFrame a CSV y genera los datos
-        csv_data = df.to_csv(index=False).encode()
+        
+        print(df)
+        
+        return df[::3600] 
 
-        return csv_data
 
 
 app = App(app_ui, server)
