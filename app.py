@@ -6,7 +6,8 @@ from ehtools.funciones import *
 import pandas as pd
 from pvlib import irradiance, location
 from shinywidgets import output_widget, render_plotly
-from flask import Response
+import asyncio
+from io import StringIO
 from datetime import date
 
 timezone = pytz.timezone('America/Mexico_City')
@@ -235,32 +236,40 @@ def server(input, output, session):
             
             return result[::3600] 
 
-    @render.download(filename="data.csv")
-    def downloadData():
-        place = input.place()
-        ruta_epw = ruta(place)  
-        mes = meses_dict[input.periodo()]  
-        caracteristicas = cargar_caracteristicas(place)  
-        absortancia = Absorbance[input.abstrac()]  
-        surface_tilt = location[input.ubicacion()] 
-        surface_azimuth = orientacion[input.orientacion()]  
+    @render.download(
+        filename=lambda: f"datos-{date.today().isoformat()}.csv"
+    )
+    async def downloadData():
+            place = input.place()
+            ruta_epw = ruta(place)  
+            mes = meses_dict[input.periodo()]  
+            caracteristicas = cargar_caracteristicas(place)  
+            absortancia = Absorbance[input.abstrac()]  
+            surface_tilt = location[input.ubicacion()] 
+            surface_azimuth = orientacion[input.orientacion()]  
 
-        df = calculate_day(
-            ruta_epw,
-            caracteristicas['lat'],
-            caracteristicas['lon'],
-            caracteristicas['alt'],
-            mes,
-            absortancia,
-            surface_tilt,
-            surface_azimuth,
-            timezone
-        )
-        
-        data = df[::3600]
-        print(data)
-        
-        return data
+            data = calculate_day(
+                ruta_epw,
+                caracteristicas['lat'],
+                caracteristicas['lon'],
+                caracteristicas['alt'],
+                mes,
+                absortancia,
+                surface_tilt,
+                surface_azimuth,
+                timezone
+            )
+            
+            data_= data[::3600]
+            # Convertir el DataFrame a CSV
+            csv_buffer = StringIO()
+            data_.to_csv(csv_buffer, index=False)
+            csv_buffer.seek(0)
+
+            await asyncio.sleep(0.25)
+
+            # Enviar el contenido del CSV
+            yield csv_buffer.read()
 
 
 
