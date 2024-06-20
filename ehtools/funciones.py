@@ -106,20 +106,14 @@ def info_right(num, materiales):
         ui.modal_show(modal)
     else:
         campos_list = []
-        i = 0
-        while i < num:
-
+        for i in range(num):
             campos_list.append(
                 ui.TagList(
                     ui.layout_columns(
-                        ui.input_numeric("espesor", f"Espesor {i+1}:", value=0.01, min=0.01, max=0.9, step=0.04),
-                        ui.input_select("material", f"Material {i+1}:", choices=materiales)
-
+                        ui.input_numeric(f"espesor_{i}", f"Espesor {i+1}:", value=0.01, max=0.9, step=2, min=0.01),
+                        ui.input_select(f"materiales_{i}", f"Material {i+1}:", choices=materiales)
                     )
                 )
             )
-            i += 1
-
-            
         return campos_list
 
