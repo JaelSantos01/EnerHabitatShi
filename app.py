@@ -91,7 +91,7 @@ def server(input, output, session):
     def campos():
         num = input.sistemas()
         return info_right(num, materiales)
-
+    
     @output
     @render_plotly
     def grafica_Temperatura():
@@ -155,7 +155,18 @@ def server(input, output, session):
         sistemas = input.sistemas()
         condicion = input.Conditional()
         tipo = input.type()
-        return f"Lugar: {lugar}, Mes: {mes}, Ubicacion: {ubicacion}, Orientacion: {orienta}, Absortancia: {abs}, Sistemas: {sistemas}, Condicion: {condicion}, Tipo de sistema: {tipo}"
+        espesor1 = input.espesor1()
+        material1 = input.material1()
+        espesor2 = input.espesor2()
+        material2 = input.material2()
+        espesor3 = input.espesor3()
+        material3 = input.material3()
+        espesor4 = input.espesor4()
+        material4 = input.material4()
+        espesor5 = input.espesor5()
+        material5 = input.material5()
+        datos = f"Espesor2: {espesor2}, Material2: {material2}, Espesor 3: {espesor3}, Material 3: {material3}, Espesor 4: {espesor4}, Material 4: {material4}, Espesor 5: {espesor5}, Material 5: {material5}"
+        return f"Lugar: {lugar}, Mes: {mes}, Ubicacion: {ubicacion}, Orientacion: {orienta}, Absortancia: {abs}, Sistemas: {sistemas}, Condicion: {condicion}, Tipo de sistema: {tipo}, Espesor1: {espesor1}, Material1: {material1}" 
 
     @output
     @render.data_frame

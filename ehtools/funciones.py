@@ -100,20 +100,55 @@ def rigth_controls(type, materiales):
 
 
 def info_right(num, materiales):
-    if num > 5 or num < 1:
+    if num > 5 or num < 1 or num is None:
         modal_content = "Solo se permiten hasta 5 sistemas constructivos."
         modal = ui.modal(modal_content, title="Error", easy_close=True)
         ui.modal_show(modal)
+    
     else:
-        campos_list = []
-        for i in range(num):
-            campos_list.append(
-                ui.TagList(
-                    ui.layout_columns(
-                        ui.input_numeric(f"espesor_{i}", f"Espesor {i+1}:", value=0.01, max=0.9, step=2, min=0.01),
-                        ui.input_select(f"materiales_{i}", f"Material {i+1}:", choices=materiales)
-                    )
-                )
+        num1 = ui.TagList(
+            ui.layout_columns(
+                ui.input_numeric("espesor1", "Espesor 1:", value=0.010, max=0.9, step=0.01, min=0.010),
+                ui.input_select("material1", "Material 1:", choices=materiales)
             )
-        return campos_list
+        )
+        
+        num2 = ui.TagList(
+            ui.layout_columns(
+                ui.input_numeric("espesor2", "Espesor 2:", value=0.010, max=0.9, step=0.01, min=0.010),
+                ui.input_select("material2", "Material 2:", choices=materiales)
+            )
+        )
+        
+        num3 = ui.TagList(
+            ui.layout_columns(
+                ui.input_numeric("espesor3", "Espesor 3:", value=0.010, max=0.9, step=0.01, min=0.010),
+                ui.input_select("material3", "Material 3:", choices=materiales)
+            )
+        )
+        
+        num4 = ui.TagList(
+            ui.layout_columns(
+                ui.input_numeric("espesor4", "Espesor 4:", value=0.010, max=0.9, step=0.01, min=0.010),
+                ui.input_select("material4", "Material 4:", choices=materiales)
+            )
+        )
+        
+        num5 = ui.TagList(
+            ui.layout_columns(
+                ui.input_numeric("espesor5", "Espesor 5:", value=0.010, max=0.9, step=0.01, min=0.010),
+                ui.input_select("material5", "Material 5:", choices=materiales)
+            )
+        )
+        
+        if num == 1:
+            return num1
+        elif num == 2:
+            return num1 + num2
+        elif num == 3:
+            return num1 + num2 + num3
+        elif num == 4:
+            return num1 + num2 + num3 + num4
+        elif num == 5:
+            return num1 + num2 + num3 + num4 + num5
 
