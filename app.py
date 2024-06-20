@@ -165,7 +165,6 @@ def server(input, output, session):
             mes = meses_dict[input.periodo()]  
             caracteristicas = cargar_caracteristicas(place)  
             absortancia = input.absortance_value() 
-            print(absortancia)
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
 
