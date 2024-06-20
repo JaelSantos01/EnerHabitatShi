@@ -89,7 +89,9 @@ def server(input, output, session):
     @render.ui
     def campos():
         num = input.sistemas()
-        return info_right(num, materiales)
+        info_right(num, materiales)
+        
+        
 
     @output
     @render_plotly
@@ -154,7 +156,9 @@ def server(input, output, session):
         sistemas = input.sistemas()
         condicion = input.Conditional()
         tipo = input.type()
-        return f"Lugar: {lugar}, Mes: {mes}, Ubicacion: {ubicacion}, Orientacion: {orienta}, Absortancia: {abs}, Sistemas: {sistemas}, Condicion: {condicion}, Tipo de sistema: {tipo}"
+        material = input.material()
+        espesor = input.espesor()
+        return f"Lugar: {lugar}, Mes: {mes}, Ubicacion: {ubicacion}, Orientacion: {orienta}, Absortancia: {abs}, Sistemas: {sistemas}, Condicion: {condicion}, Tipo de sistema: {tipo}, Material: {material}, Espesor: {espesor}"
 
     @output
     @render.data_frame
