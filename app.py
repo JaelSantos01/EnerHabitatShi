@@ -43,9 +43,10 @@ app_ui = ui.page_sidebar(
         ui.navset_card_underline(
             ui.nav_panel("Temperaturas", output_widget("grafica_Temperatura")),
             ui.nav_panel("Radiación", output_widget("grafica_Radiacion")),
-            ui.nav_panel("Resultados", ui.output_text("pendiente")),
+            ui.nav_panel("Resultados", ui.output_text("resultados")),
             ui.nav_panel("Datos", ui.output_data_frame("get_day_data"),
             ui.download_button("downloadData", "Download")),
+            ui.nav_panel("Documentación", ui.output_text("documentacion")),
             title="Datos Gráficados",
         ),
     
@@ -145,7 +146,7 @@ def server(input, output, session):
 
     @output
     @render.text
-    def pendiente():
+    def resultados():
         lugar = input.place()
         mes = input.periodo()
         ubicacion = input.ubicacion()
@@ -163,7 +164,8 @@ def server(input, output, session):
             ruta_epw = ruta(place)  
             mes = meses_dict[input.periodo()]  
             caracteristicas = cargar_caracteristicas(place)  
-            absortancia = Absorbance[input.abstrac()]  
+            absortancia = input.absortance_value() 
+            print(absortancia)
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
 
@@ -189,7 +191,7 @@ def server(input, output, session):
             ruta_epw = ruta(place)  
             mes = meses_dict[input.periodo()]  
             caracteristicas = cargar_caracteristicas(place)  
-            absortancia = Absorbance[input.abstrac()]  
+            absortancia = input.absortance_value() 
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
 
