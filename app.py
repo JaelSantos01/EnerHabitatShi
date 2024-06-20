@@ -41,8 +41,8 @@ app_ui = ui.page_sidebar(
         ),
     ),
         ui.navset_card_underline(
-            ui.nav_panel("Temperaturas", output_widget("grafica_mes")),
-            ui.nav_panel("Radiación", output_widget("grafica_duplicada")),
+            ui.nav_panel("Temperaturas", output_widget("grafica_Temperatura")),
+            ui.nav_panel("Radiación", output_widget("grafica_Radiacion")),
             ui.nav_panel("Resultados", ui.output_text("pendiente")),
             ui.nav_panel("Datos", ui.output_data_frame("get_day_data"),
             ui.download_button("downloadData", "Download")),
@@ -93,7 +93,7 @@ def server(input, output, session):
 
     @output
     @render_plotly
-    def grafica_mes():
+    def grafica_Temperatura():
         place = input.place()
         ruta_epw = ruta(place)
         mes = meses_dict[input.periodo()]
@@ -114,12 +114,12 @@ def server(input, output, session):
             timezone
         )
         
-        fig = plot_T_I(dia)
+        fig = plot_T(dia)
         return fig
 
     @output
     @render_plotly
-    def grafica_duplicada():
+    def grafica_Radiacion():
         place = input.place()
         ruta_epw = ruta(place)
         mes = meses_dict[input.periodo()]
@@ -140,7 +140,7 @@ def server(input, output, session):
             timezone
         )
         
-        fig = plot_T_I(dia)
+        fig = plot_I(dia)
         return fig
 
     @output
@@ -207,7 +207,7 @@ def server(input, output, session):
             
             data_= data[::3600]
             csv_buffer = StringIO()
-            data_.to_csv(csv_buffer, index=False)
+            data_.to_csv(csv_buffer,index=True)
             csv_buffer.seek(0)
 
             await asyncio.sleep(0.25)
