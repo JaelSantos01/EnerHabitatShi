@@ -246,7 +246,7 @@ def server(input, output, session):
         
             data_= data[::3600].reset_index() 
             csv_buffer = StringIO()
-            data_.to_csv(csv_buffer, index=False)
+            data_.to_csv(csv_buffer,index=True)
             csv_buffer.seek(0)
 
             await asyncio.sleep(0.25)
