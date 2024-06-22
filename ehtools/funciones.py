@@ -64,8 +64,7 @@ def absortance_value(value):
 def top_controls(type):
     if type == "1":
         return ui.TagList(
-            "Número de sistemas:",
-            ui.input_action_button("sistemas", "Agregar sistemas", class_="btn btn-secondar"),
+            ui.input_numeric("sistemas", "Número de sistemas:", 1, min=1, max=5),
             ui.input_select("Conditional", "Condición:", choices=["Sin aire acondicionado", "Con aire acondicionado"]),  
         )
     elif type == "2":
@@ -103,15 +102,16 @@ def rigth_controls(type, materiales):
 
 
 def info_right(num, materiales):
-    espesores={}
+
     material={}
+
     if num > 5 or num < 1:
         modal_content = "Solo se permiten hasta 5 sistemas constructivos."
         modal = ui.modal(modal_content, title="Error", easy_close=True)
         ui.modal_show(modal)
     else:
         campos_list = []
-        for i in range(num):
+        for i in range (num):
             campos_list.append(
                 ui.TagList(
                     ui.layout_columns(
@@ -120,6 +120,9 @@ def info_right(num, materiales):
                     )
                 )
             )
+            espesores = {"espesor1": f"espesor_{1}","espesor1": f"espesor_{2}","espesor1": f"espesor_{3}",
+                        "espesor1": f"espesor_{4}","espesor1": f"espesor_{5}"}
+            print(espesores)
         return campos_list
 
 
