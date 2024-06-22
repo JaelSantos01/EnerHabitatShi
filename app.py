@@ -89,6 +89,7 @@ def server(input, output, session):
     @render.ui
     def campos():
         num = input.sistemas()
+        print(num)
         info_right(num, materiales)
         
         

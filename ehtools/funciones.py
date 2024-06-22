@@ -1,8 +1,6 @@
 import configparser
 from shiny import App, ui, render, reactive
 from iertools.read import read_epw
-import duckdb
-
 
 # Leer la configuración desde un archivo INI
 config = configparser.ConfigParser()
@@ -64,7 +62,7 @@ def absortance_value(value):
 def top_controls(type):
     if type == "1":
         return ui.TagList(
-            ui.input_numeric("sistemas", "Número de sistemas:", 1, min=1, max=5),
+            ui.input_numeric("sistemas", "Número de sistemas:", value=1, min=1, max=5),  
             ui.input_select("Conditional", "Condición:", choices=["Sin aire acondicionado", "Con aire acondicionado"]),  
         )
     elif type == "2":
@@ -102,29 +100,22 @@ def rigth_controls(type, materiales):
 
 
 def info_right(num, materiales):
-
-    material={}
-
     if num > 5 or num < 1:
         modal_content = "Solo se permiten hasta 5 sistemas constructivos."
         modal = ui.modal(modal_content, title="Error", easy_close=True)
         ui.modal_show(modal)
     else:
         campos_list = []
-        for i in range (num):
+        i= 0
+        while i < 5:
             campos_list.append(
                 ui.TagList(
                     ui.layout_columns(
-                        ui.input_numeric(f"espesor_{i}", f"Espesor {i+1}:", value=0.01, max=0.9, step=2, min=0.01),
+                        ui.input_numeric(f"espesor_{i}", f"Espesor {i+1}:", value=0.010, min=0.010, max=0.9, step=0.02),
                         ui.input_select(f"materiales_{i}", f"Material {i+1}:", choices=materiales)
                     )
                 )
             )
-            espesores = {"espesor1": f"espesor_{1}","espesor1": f"espesor_{2}","espesor1": f"espesor_{3}",
-                        "espesor1": f"espesor_{4}","espesor1": f"espesor_{5}"}
-            print(espesores)
+        i=+1
         return campos_list
-
-
-
 
