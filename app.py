@@ -61,11 +61,17 @@ def server(input, output, session):
     def left_controls():
         type = input.type()
         return controls_left(type, 
-                    lugares, 
-                    meses_dict, 
-                    location, 
-                    orientacion, 
-                    Absorbance)
+                        lugares, 
+                        meses_dict, 
+                        location, 
+                        orientacion, 
+                        Absorbance)
+
+    @output
+    @render.ui
+    def ubicacion_orientacion():
+        ubicacion = input.ubicacion()
+        return orientacion_disable(ubicacion,  orientacion, Absorbance)
     
     @output
     @render.ui
