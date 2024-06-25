@@ -110,7 +110,7 @@ def info_right(num, materiales):
             campos_list.append(
                 ui.TagList(
                     ui.layout_columns(
-                        ui.input_numeric(f"espesor_{i}", f"Espesor {i+1}:", value=0.1),
+                        ui.input_numeric(f"espesor_{i}", f"Espesor {i+1}:", value=0.01, max=0.9, step=2, min=0.01),
                         ui.input_select(f"materiales_{i}", f"Material {i+1}:", choices=materiales)
                     )
                 )
