@@ -39,9 +39,7 @@ def controls_left(type,lugares,meses_dict, location, orientacion,absortance):
             ui.input_select("place", "Lugar:", choices=lugares),
             ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
             ui.input_select("ubicacion", "Ubicación:", choices=list(location.keys())),
-            ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
-            ui.input_select("abstrac","Absortancia:", choices=list(absortance.keys())),
-            ui.output_ui("absortance"),
+            ui.output_ui("ubicacion_orientacion")
         )
     elif type == "2":
         return ui.TagList(
@@ -53,6 +51,19 @@ def controls_left(type,lugares,meses_dict, location, orientacion,absortance):
             ui.output_ui("absortance"),
         )
     return None
+
+def orientacion_disable(ubicacion,  orientacion, absortance):
+    if ubicacion == "Techo":
+        return ui.TagList(
+                ui.input_select("abstrac", "Absortancia:", choices=list(absortance.keys())),
+                ui.output_ui("absortance")
+            ) 
+    else: 
+        return ui.TagList(
+                ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
+                ui.input_select("abstrac", "Absortancia:", choices=list(absortance.keys())),
+                ui.output_ui("absortance")
+        )                  
 
 def absortance_value(value):
         return ui.TagList(
