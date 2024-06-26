@@ -203,8 +203,16 @@ def server(input, output, session):
             absortancia = Absortancia[input.absortancia()]  
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
+            place = input.place()
+            ruta_epw = ruta(place)  
+            mes = meses_dict[input.periodo()]  
+            caracteristicas = cargar_caracteristicas(place)  
+            absortancia = Absortancia[input.abstrac()]  
+            surface_tilt = location[input.ubicacion()] 
+            surface_azimuth = orientacion[input.orientacion()]  
 
-            result = data_frame(ruta_epw,
+            result = data_frame(
+                ruta_epw,
                 caracteristicas['lat'],
                 caracteristicas['lon'],
                 caracteristicas['alt'],
@@ -227,7 +235,7 @@ def server(input, output, session):
             place = input.place()
             ruta_epw = ruta(place)  
             mes = meses_dict[input.periodo()]  
-            caracteristicas = cargar_caracteristicas(place)  
+            caracteristicas = cargar_caracteristicas(place) 
             absortancia = Absortancia[input.absortancia()]  
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
