@@ -46,6 +46,7 @@ app_ui = ui.page_sidebar(
             ui.nav_panel("Resultados", ui.output_text("pendiente")),
             ui.nav_panel("Datos", ui.output_data_frame("get_day_data"),
             ui.download_button("downloadData", "Download")),
+            ui.nav_panel("Documentacion", ui.output_text("documentacion")),
             title="Datos Gráficados",
         ),
     
@@ -120,7 +121,7 @@ def server(input, output, session):
             timezone
         )
         
-        fig = plot_T_I(dia)
+        fig = plot_T(dia)
         return fig
 
     @output
@@ -146,7 +147,7 @@ def server(input, output, session):
             timezone
         )
         
-        fig = plot_T_I(dia)
+        fig = plot_I(dia)
         return fig
 
     @output
@@ -198,8 +199,7 @@ def server(input, output, session):
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
 
-            result = calculate_day(
-                ruta_epw,
+            result = data_frame(ruta_epw,
                 caracteristicas['lat'],
                 caracteristicas['lon'],
                 caracteristicas['alt'],
@@ -209,8 +209,12 @@ def server(input, output, session):
                 surface_azimuth,
                 timezone
             )
-            
-            return result[::3600] 
+
+            data_to_show = result[::3600].reset_index() 
+            data_to_show['Fecha_Hora'] = data_to_show['Fecha_Hora'].dt.strftime('%Y-%m-%d %H:%M:%S')
+
+            return data_to_show 
+
 
     @render.download(
         filename=lambda: f"data-{date.today().isoformat()}.csv"
@@ -224,7 +228,7 @@ def server(input, output, session):
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
 
-            data = calculate_day(
+            data = data_frame(
                 ruta_epw,
                 caracteristicas['lat'],
                 caracteristicas['lon'],
@@ -236,8 +240,7 @@ def server(input, output, session):
                 timezone
             )
         
-            data_= data[::3600]
-            print(data)
+            data_= data[::3600].reset_index() 
             csv_buffer = StringIO()
             data_.to_csv(csv_buffer, index=False)
             csv_buffer.seek(0)
