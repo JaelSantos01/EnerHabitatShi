@@ -190,27 +190,31 @@ def server(input, output, session):
     @output
     @render.data_frame
     def get_day_data():
-            place = input.place()
-            ruta_epw = ruta(place)  
-            mes = meses_dict[input.periodo()]  
-            caracteristicas = cargar_caracteristicas(place)  
-            absortancia = Absorbance[input.abstrac()]  
-            surface_tilt = location[input.ubicacion()] 
-            surface_azimuth = orientacion[input.orientacion()]  
+        place = input.place()
+        ruta_epw = ruta(place)  
+        mes = meses_dict[input.periodo()]  
+        caracteristicas = cargar_caracteristicas(place)  
+        absortancia = Absorbance[input.abstrac()]  
+        surface_tilt = location[input.ubicacion()] 
+        surface_azimuth = orientacion[input.orientacion()]  
 
-            result = calculate_day(
-                ruta_epw,
-                caracteristicas['lat'],
-                caracteristicas['lon'],
-                caracteristicas['alt'],
-                mes,
-                absortancia,
-                surface_tilt,
-                surface_azimuth,
-                timezone
-            )
-            
-            return result[::3600] 
+        result = data_frame(
+            ruta_epw,
+            caracteristicas['lat'],
+            caracteristicas['lon'],
+            caracteristicas['alt'],
+            mes,
+            absortancia,
+            surface_tilt,
+            surface_azimuth,
+            timezone
+        )
+
+        data_to_show = result[::3600].reset_index() 
+        data_to_show['Fecha_Hora'] = data_to_show['Fecha_Hora'].dt.strftime('%Y-%m-%d %H:%M:%S')
+
+        return data_to_show 
+
 
     @render.download(
         filename=lambda: f"datos-{date.today().isoformat()}.csv"
@@ -224,7 +228,7 @@ def server(input, output, session):
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
 
-            data = calculate_day(
+            data = data_frame(
                 ruta_epw,
                 caracteristicas['lat'],
                 caracteristicas['lon'],
@@ -236,8 +240,7 @@ def server(input, output, session):
                 timezone
             )
         
-            data_= data[::3600]
-            print(data)
+            data_= data[::3600].reset_index() 
             csv_buffer = StringIO()
             data_.to_csv(csv_buffer, index=False)
             csv_buffer.seek(0)
