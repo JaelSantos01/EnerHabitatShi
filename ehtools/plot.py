@@ -25,7 +25,9 @@ def plot_T_I(dia):
     fig.add_trace(go.Scatter(x=df.index, y=df['Is'], mode='lines', name='Is'), row=2, col=1)
 
     # Configuración adicional
-    fig.update_layout(height=500, width=1000)
+    fig.update_layout(
+        autosize=True,
+    )
     fig.update_yaxes(title_text="Temperatura [°C]", row=1, col=1)
     fig.update_yaxes(title_text="Irradiancia [W/m²]", row=2, col=1)
 

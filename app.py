@@ -61,17 +61,23 @@ def server(input, output, session):
     def left_controls():
         type = input.type()
         return controls_left(type, 
-                    lugares, 
-                    meses_dict, 
-                    location, 
-                    orientacion, 
-                    Absorbance)
+                        lugares, 
+                        meses_dict, 
+                        location, 
+                        orientacion, 
+                        Absortancia)
+
+    @output
+    @render.ui
+    def ubicacion_orientacion():
+        ubicacion = input.ubicacion()
+        return orientacion_disable(ubicacion,  orientacion, Absortancia)
     
     @output
     @render.ui
-    def absortance():
-        selected = input.abstrac()
-        value = Absorbance.get(selected, 0.10)
+    def absortancia_f():
+        selected = input.absortancia()
+        value = Absortancia.get(selected, 0.10)
         return absortance_value(value)
     
     @output
@@ -91,7 +97,7 @@ def server(input, output, session):
     def campos():
         num = input.sistemas()
         return info_right(num, materiales)
-
+    
     @output
     @render_plotly
     def grafica_Temperatura():
@@ -99,7 +105,7 @@ def server(input, output, session):
         ruta_epw = ruta(place)
         mes = meses_dict[input.periodo()]
         caracteristicas = cargar_caracteristicas(place)
-        absortancia = input.absortance_value() #0.3
+        absortancia = input.absortancia_value() #0.3
         surface_tilt = location[input.ubicacion()]  # ubicacion
         surface_azimuth = orientacion[input.orientacion()] #270
 
@@ -125,7 +131,7 @@ def server(input, output, session):
         ruta_epw = ruta(place)
         mes = meses_dict[input.periodo()]
         caracteristicas = cargar_caracteristicas(place)
-        absortancia = input.absortance_value() #0.3
+        absortancia = input.absortancia_value() #0.3
         surface_tilt = location[input.ubicacion()]  # ubicacion
         surface_azimuth = orientacion[input.orientacion()] #270
 
@@ -151,12 +157,37 @@ def server(input, output, session):
         mes = input.periodo()
         ubicacion = input.ubicacion()
         orienta = input.orientacion()
-        abs = input.abstrac()
+        abs = input.absortancia()
         sistemas = input.sistemas()
         condicion = input.Conditional()
         tipo = input.type()
-        return f"Lugar: {lugar}, Mes: {mes}, Ubicacion: {ubicacion}, Orientacion: {orienta}, Absortancia: {abs}, Sistemas: {sistemas}, Condicion: {condicion}, Tipo de sistema: {tipo}"
+        e1 = input.espesor1()
+        m1 = input.material1()
+        e2 = input.espesor2()
+        m2 = input.material2()
+        e3 = input.espesor3()
+        m3 = input.material3()
+        e4 = input.espesor4()
+        m4 = input.material4()
+        e5 = input.espesor5()
+        m5 = input.material5()
+        
+        espesores = []
+        materiales = []
+        
+        for i in range(1, sistemas + 1):
+            espesor = locals()[f"e{i}"]
+            material = locals()[f"m{i}"]
+            espesores.append(espesor)
+            materiales.append(material)
 
+        resultado = f"Lugar: {lugar}, Mes: {mes}, Ubicacion: {ubicacion}, Orientacion: {orienta}, Absortancia: {abs}, Sistemas: {sistemas}, Condicion: {condicion}, Tipo de sistema: {tipo}"
+
+        for i in range(sistemas):
+            resultado += f", Espesor {i+1}: {espesores[i]}, Material {i+1}: {materiales[i]}"
+
+        return resultado
+        
     @output
     @render.data_frame
     def get_day_data():
@@ -164,7 +195,11 @@ def server(input, output, session):
             ruta_epw = ruta(place)  
             mes = meses_dict[input.periodo()]  
             caracteristicas = cargar_caracteristicas(place)  
+<<<<<<< HEAD
             absortancia = input.absortance_value() 
+=======
+            absortancia = Absortancia[input.absortancia()]  
+>>>>>>> abstract_var
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
 
@@ -183,14 +218,18 @@ def server(input, output, session):
             return result[::3600] 
 
     @render.download(
-        filename=lambda: f"datos-{date.today().isoformat()}.csv"
+        filename=lambda: f"data-{date.today().isoformat()}.csv"
     )
     async def downloadData():
             place = input.place()
             ruta_epw = ruta(place)  
             mes = meses_dict[input.periodo()]  
             caracteristicas = cargar_caracteristicas(place)  
+<<<<<<< HEAD
             absortancia = input.absortance_value() 
+=======
+            absortancia = Absortancia[input.absortancia()]  
+>>>>>>> abstract_var
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
 
