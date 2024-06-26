@@ -235,8 +235,9 @@ def server(input, output, session):
                 surface_azimuth,
                 timezone
             )
-            
+        
             data_= data[::3600]
+            print(data)
             csv_buffer = StringIO()
             data_.to_csv(csv_buffer, index=False)
             csv_buffer.seek(0)
