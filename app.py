@@ -1,256 +1,162 @@
-from shiny import App, ui, render, reactive
-from ehtools.diatipico import *
-from ehtools.plot import *
 from pathlib import Path
-from ehtools.funciones import *
-from ehtools.diccionaries import *
-from shinywidgets import output_widget, render_plotly
-import asyncio
-from io import StringIO
-from datetime import date
+from shiny import App, ui, reactive, Session
 
-timezone = pytz.timezone('America/Mexico_City')
-app_dir = Path(__file__).parent
+from modules import map, plot
+from utils.helper_text import info_modal
 
-app_ui = ui.page_sidebar(
-    ui.sidebar(
-        ui.accordion(
-            ui.accordion_panel(
-                "Cambios",
-                ui.output_ui("left_controls"),
-            ),
-        ),
-        
-        ui.accordion(
-            ui.accordion_panel(
-                "Selección",
-                    ui.output_ui("controls_top"),
-                        ui.input_select(  
-                            "type",  
-                            "Tipo de sistema:",  
-                            {"1": "Capa homogénea"},  
-                        ),
-            ),
-        ),
+page_dependencies = ui.tags.head(
+    ui.tags.link(rel="stylesheet", type="text/css", href="layout.css"),
+    ui.tags.link(rel="stylesheet", type="text/css", href="style.css"),
+    ui.tags.script(src="index.js"),
 
-        ui.accordion(
-            ui.accordion_panel(
-                "Datos",
-                ui.output_ui("controls_rigth")
-            ),
-        ),
-    ),
-        ui.navset_card_underline(
-            ui.nav_panel("Temperaturas", output_widget("grafica_mes")),
-            ui.nav_panel("Radiación", output_widget("grafica_duplicada")),
-            ui.nav_panel("Resultados", ui.output_text("pendiente")),
-            ui.nav_panel("Datos", ui.output_data_frame("get_day_data"),
-            ui.download_button("downloadData", "Download")),
-            title="Datos Gráficados",
-        ),
-    
-    ui.include_css(app_dir / "styles.css"),
-    title="Ener-Habitat Phy",
-    fillable=True,
+    # PWA Support
+    ui.tags.script("""
+
+        async function delayManifest() {
+            let retries = 100;
+            let statusCode = 404;
+            let response;
+
+            while (statusCode === 404 && --retries > 0) {
+                response = await fetch("pwa/manifest.json");
+                statusCode = response.statusCode;
+            }
+
+            if (response.statusCode === 404) throw new Error('max retries reached');
+
+            $('head').append('<link rel="manifest" href="pwa/manifest.json"/>');
+
+            return response;
+        }
+        delayManifest();
+
+        if('serviceWorker' in navigator) {
+          navigator.serviceWorker
+            .register('/respiratory_disease_pyshiny/pwa-service-worker.js', { scope: '/respiratory_disease_pyshiny/' })
+            .then(function() { console.log('Service Worker Registered'); });
+        }
+    """),
+    ui.tags.link(rel="apple-touch-icon", href="pwa/icon.png"),
+
+    ui.tags.meta(name="description", content="Respiratory Disease PyShiny"),
+    ui.tags.meta(name="theme-color", content="#000000"),
+    ui.tags.meta(name="apple-mobile-web-app-status-bar-style", content="#000000"),
+    ui.tags.meta(name="apple-mobile-web-app-capable", content="yes"),
+    ui.tags.meta(name="viewport", content="width=device-width, initial-scale=1"),
 )
 
-def server(input, output, session):
-    @output
-    @render.ui
-    def left_controls():
-        type = input.type()
-        return controls_left(type, 
-                        lugares, 
-                        meses_dict, 
-                        location, 
-                        orientacion, 
-                        Absorbance)
+# top navbar
+page_header = ui.tags.div(
+    ui.tags.div(
+        ui.tags.a(
+            ui.tags.img(
+                src="static/img/appsilon-logo.png", height="50px"
+            ),
+            href="https://demo.appsilon.com/",
+        ),
+        id="logo-top",
+        class_="navigation-logo",
+    ),
 
-    @output
-    @render.ui
-    def ubicacion_orientacion():
-        ubicacion = input.ubicacion()
-        return orientacion_disable(ubicacion,  orientacion, Absorbance)
-    
-    @output
-    @render.ui
-    def absortance():
-        selected = input.abstrac()
-        value = Absorbance.get(selected, 0.10)
-        return absortance_value(value)
-    
-    @output
-    @render.ui
-    def controls_top():
-        type = input.type()
-        return top_controls(type)
-    
-    @output
-    @render.ui
-    def controls_rigth():
-        type = input.type()
-        return rigth_controls(type, materiales)
-    
-    @output
-    @render.ui
-    def campos():
-        num = input.sistemas()
-        return info_right(num, materiales)
-    
-    @output
-    @render_plotly
-    def grafica_mes():
-        place = input.place()
-        ruta_epw = ruta(place)
-        mes = meses_dict[input.periodo()]
-        caracteristicas = cargar_caracteristicas(place)
-        absortancia = input.absortance_value() #0.3
-        surface_tilt = location[input.ubicacion()]  # ubicacion
-        surface_azimuth = orientacion[input.orientacion()] #270
+    ui.tags.div(
+        ui.tags.div(
+            ui.input_action_button(
+                id="tab_map",
+                label="Map",
+                class_="navbar-button",
+            ),
+            id="div-navbar-map",
+        ),
+        ui.tags.div(
+            ui.input_action_button(
+                id="tab_plot",
+                label="Graphs",
+                class_="navbar-button",
+            ),
+            id="div-navbar-plot",
+        ),
+        id="div-navbar-tabs",
+        class_="navigation-menu",
+    ),
 
-        dia = calculate_day(
-            ruta_epw,
-            caracteristicas['lat'],
-            caracteristicas['lon'],
-            caracteristicas['alt'],
-            mes,
-            absortancia,
-            surface_tilt,
-            surface_azimuth,
-            timezone
-        )
-        
-        fig = plot_T_I(dia)
-        return fig
+    ui.tags.div(
+        ui.input_switch(
+            id="dataset", label="World Bank", value=True
+        ),
+        id="div-navbar-selector",
+        class_="navigation-dataset",
+    ),
 
-    @output
-    @render_plotly
-    def grafica_duplicada():
-        place = input.place()
-        ruta_epw = ruta(place)
-        mes = meses_dict[input.periodo()]
-        caracteristicas = cargar_caracteristicas(place)
-        absortancia = input.absortance_value() #0.3
-        surface_tilt = location[input.ubicacion()]  # ubicacion
-        surface_azimuth = orientacion[input.orientacion()] #270
+    ui.tags.div(
+        ui.input_action_button(
+            id="info_icon",
+            label=None,
+            icon=ui.tags.i(class_="glyphicon glyphicon-info-sign"),
+            class_="navbar-info",
+        ),
+        class_="navigation-info",
+    ),
 
-        dia = calculate_day(
-            ruta_epw,
-            caracteristicas['lat'],
-            caracteristicas['lon'],
-            caracteristicas['alt'],
-            mes,
-            absortancia,
-            surface_tilt,
-            surface_azimuth,
-            timezone
-        )
-        
-        fig = plot_T_I(dia)
-        return fig
+    id="div-navbar",
+    class_="navbar-top page-header card-style",
+)
 
-    @output
-    @render.text
-    def pendiente():
-        lugar = input.place()
-        mes = input.periodo()
-        ubicacion = input.ubicacion()
-        orienta = input.orientacion()
-        abs = input.abstrac()
-        sistemas = input.sistemas()
-        condicion = input.Conditional()
-        tipo = input.type()
-        e1 = input.espesor1()
-        m1 = input.material1()
-        e2 = input.espesor2()
-        m2 = input.material2()
-        e3 = input.espesor3()
-        m3 = input.material3()
-        e4 = input.espesor4()
-        m4 = input.material4()
-        e5 = input.espesor5()
-        m5 = input.material5()
-        
-        espesores = []
-        materiales = []
-        
-        for i in range(1, sistemas + 1):
-            espesor = locals()[f"e{i}"]
-            material = locals()[f"m{i}"]
-            espesores.append(espesor)
-            materiales.append(material)
+map_ui = ui.tags.div(
+    map.map_ui("map"),
+    id="map-container",
+    class_="page-main main-visible",
+)
 
-        resultado = f"Lugar: {lugar}, Mes: {mes}, Ubicacion: {ubicacion}, Orientacion: {orienta}, Absortancia: {abs}, Sistemas: {sistemas}, Condicion: {condicion}, Tipo de sistema: {tipo}"
+plot_ui = ui.tags.div(
+    plot.plot_ui("plot"),
+    id="plot-container",
+    class_="page-main",
+)
 
-        for i in range(sistemas):
-            resultado += f", Espesor {i+1}: {espesores[i]}, Material {i+1}: {materiales[i]}"
+page_layout = ui.tags.div(
+    page_header,
+    map_ui,
+    plot_ui,
+    class_ = "page-layout"
+)
 
-        return resultado
-        
-    @output
-    @render.data_frame
-    def get_day_data():
-        place = input.place()
-        ruta_epw = ruta(place)  
-        mes = meses_dict[input.periodo()]  
-        caracteristicas = cargar_caracteristicas(place)  
-        absortancia = Absorbance[input.abstrac()]  
-        surface_tilt = location[input.ubicacion()] 
-        surface_azimuth = orientacion[input.orientacion()]  
+app_ui = ui.page_fluid(
+    page_dependencies,
+    page_layout,
+    title="Respiratory Disease App",
+)
 
-        result = data_frame(
-            ruta_epw,
-            caracteristicas['lat'],
-            caracteristicas['lon'],
-            caracteristicas['alt'],
-            mes,
-            absortancia,
-            surface_tilt,
-            surface_azimuth,
-            timezone
+
+def server(input, output, session: Session):
+
+    info_modal()
+
+    @reactive.Effect
+    @reactive.event(input.info_icon)
+    def _():
+        info_modal()
+
+    @reactive.Calc
+    def is_wb_data():
+        return input.dataset()
+
+    map.map_server("map", is_wb_data)
+    plot.plot_server("plot", is_wb_data)
+
+    @reactive.Effect
+    @reactive.event(input.tab_map)
+    async def _():
+        await session.send_custom_message(
+            "toggleActiveTab", {"activeTab": "map"}
         )
 
-        data_to_show = result[::3600].reset_index() 
-        data_to_show['Fecha_Hora'] = data_to_show['Fecha_Hora'].dt.strftime('%Y-%m-%d %H:%M:%S')
-
-        return data_to_show 
-
-
-    @render.download(
-        filename=lambda: f"datos-{date.today().isoformat()}.csv"
-    )
-    async def downloadData():
-            place = input.place()
-            ruta_epw = ruta(place)  
-            mes = meses_dict[input.periodo()]  
-            caracteristicas = cargar_caracteristicas(place)  
-            absortancia = Absorbance[input.abstrac()]  
-            surface_tilt = location[input.ubicacion()] 
-            surface_azimuth = orientacion[input.orientacion()]  
-
-            data = data_frame(
-                ruta_epw,
-                caracteristicas['lat'],
-                caracteristicas['lon'],
-                caracteristicas['alt'],
-                mes,
-                absortancia,
-                surface_tilt,
-                surface_azimuth,
-                timezone
-            )
-        
-            data_= data[::3600].reset_index() 
-            csv_buffer = StringIO()
-            data_.to_csv(csv_buffer, index=False)
-            csv_buffer.seek(0)
-
-            await asyncio.sleep(0.25)
-            yield csv_buffer.read()
+    @reactive.Effect
+    @reactive.event(input.tab_plot)
+    async def _():
+        await session.send_custom_message(
+            "toggleActiveTab", {"activeTab": "plot"}
+        )
 
 
-
-app = App(app_ui, server)
-
-if __name__ == "__main__":
-    app.run()
+www_dir = Path(__file__).parent / "www"
+app = App(app_ui, server, static_assets=www_dir)
