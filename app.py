@@ -213,7 +213,7 @@ def server(input, output, session):
             return result[::3600] 
 
     @render.download(
-        filename=lambda: f"datos-{date.today().isoformat()}.csv"
+        filename=lambda: f"data-{date.today().isoformat()}.csv"
     )
     async def downloadData():
             place = input.place()
