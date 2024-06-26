@@ -41,12 +41,11 @@ app_ui = ui.page_sidebar(
         ),
     ),
         ui.navset_card_underline(
-            ui.nav_panel("Temperaturas", output_widget("grafica_Temperatura")),
-            ui.nav_panel("Radiación", output_widget("grafica_Radiacion")),
-            ui.nav_panel("Resultados", ui.output_text("resultados")),
+            ui.nav_panel("Temperaturas", output_widget("grafica_mes")),
+            ui.nav_panel("Radiación", output_widget("grafica_duplicada")),
+            ui.nav_panel("Resultados", ui.output_text("pendiente")),
             ui.nav_panel("Datos", ui.output_data_frame("get_day_data"),
             ui.download_button("downloadData", "Download")),
-            ui.nav_panel("Documentación", ui.output_text("documentacion")),
             title="Datos Gráficados",
         ),
     
@@ -100,7 +99,7 @@ def server(input, output, session):
     
     @output
     @render_plotly
-    def grafica_Temperatura():
+    def grafica_mes():
         place = input.place()
         ruta_epw = ruta(place)
         mes = meses_dict[input.periodo()]
@@ -121,12 +120,12 @@ def server(input, output, session):
             timezone
         )
         
-        fig = plot_T(dia)
+        fig = plot_T_I(dia)
         return fig
 
     @output
     @render_plotly
-    def grafica_Radiacion():
+    def grafica_duplicada():
         place = input.place()
         ruta_epw = ruta(place)
         mes = meses_dict[input.periodo()]
@@ -147,12 +146,12 @@ def server(input, output, session):
             timezone
         )
         
-        fig = plot_I(dia)
+        fig = plot_T_I(dia)
         return fig
 
     @output
     @render.text
-    def resultados():
+    def pendiente():
         lugar = input.place()
         mes = input.periodo()
         ubicacion = input.ubicacion()
@@ -195,11 +194,7 @@ def server(input, output, session):
             ruta_epw = ruta(place)  
             mes = meses_dict[input.periodo()]  
             caracteristicas = cargar_caracteristicas(place)  
-<<<<<<< HEAD
-            absortancia = input.absortance_value() 
-=======
             absortancia = Absortancia[input.absortancia()]  
->>>>>>> abstract_var
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
 
@@ -225,11 +220,7 @@ def server(input, output, session):
             ruta_epw = ruta(place)  
             mes = meses_dict[input.periodo()]  
             caracteristicas = cargar_caracteristicas(place)  
-<<<<<<< HEAD
-            absortancia = input.absortance_value() 
-=======
             absortancia = Absortancia[input.absortancia()]  
->>>>>>> abstract_var
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
 
@@ -247,7 +238,7 @@ def server(input, output, session):
             
             data_= data[::3600]
             csv_buffer = StringIO()
-            data_.to_csv(csv_buffer,index=True)
+            data_.to_csv(csv_buffer, index=False)
             csv_buffer.seek(0)
 
             await asyncio.sleep(0.25)
