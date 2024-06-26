@@ -2,7 +2,7 @@ from pathlib import Path
 from shiny import App, ui, reactive, Session
 
 from modules import map, plot
-from utils.helper_text import info_modal
+#from utils.helper_text import info_modal
 
 page_dependencies = ui.tags.head(
     ui.tags.link(rel="stylesheet", type="text/css", href="layout.css"),
@@ -129,12 +129,12 @@ app_ui = ui.page_fluid(
 
 def server(input, output, session: Session):
 
-    info_modal()
+    #info_modal()
 
     @reactive.Effect
     @reactive.event(input.info_icon)
     def _():
-        info_modal()
+        #info_modal()
 
     @reactive.Calc
     def is_wb_data():
