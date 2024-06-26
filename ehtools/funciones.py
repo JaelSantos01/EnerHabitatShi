@@ -47,27 +47,27 @@ def controls_left(type,lugares,meses_dict, location, orientacion,absortance):
             ui.input_selectize("periodo", "Mes:", choices=list(meses_dict.keys())),
             ui.input_select("ubicacion", "Ubicación:", choices=list(location.keys())),
             ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
-            ui.input_select("abstrac","Absortancia:", choices=list(absortance.keys())),
-            ui.output_ui("absortance"),
+            ui.input_select("absortancia","Absortancia:", choices=list(absortance.keys())),
+            ui.output_ui("absortancia_f"),
         )
     return None
 
 def orientacion_disable(ubicacion,  orientacion, absortance):
     if ubicacion == "Techo":
         return ui.TagList(
-                ui.input_select("abstrac", "Absortancia:", choices=list(absortance.keys())),
-                ui.output_ui("absortance")
+                ui.input_select("absortancia", "Absortancia:", choices=list(absortance.keys())),
+                ui.output_ui("absortancia_f")
             ) 
     else: 
         return ui.TagList(
                 ui.input_select("orientacion", "Orientación:", choices=list(orientacion.keys())),
-                ui.input_select("abstrac", "Absortancia:", choices=list(absortance.keys())),
-                ui.output_ui("absortance")
+                ui.input_select("absortancia", "Absortancia:", choices=list(absortance.keys())),
+                ui.output_ui("absortancia_f")
         )                  
 
 def absortance_value(value):
         return ui.TagList(
-            ui.input_numeric("absortance_value", "", value=value, min=0.10, max=1.0)
+            ui.input_numeric("absortancia_value", "", value=value, min=0.10, max=1.0)
         )
 
 def top_controls(type):

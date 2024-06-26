@@ -29,7 +29,7 @@ orientacion = {
     "Noroeste": 315,
 }
 
-Absorbance = {
+Absortancia = {
     "Aluminio pulido": 0.10,
     "Aluminio oxidado": 0.15,
     "Impermeabilizante o pintura blanca nueva": 0.15,
