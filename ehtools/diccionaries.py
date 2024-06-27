@@ -13,7 +13,7 @@ meses_dict = {
     "Diciembre": "12",
 }
 
-Absorbance = {
+Absortancia = {
     "Aluminio pulido (0.10)": 0.10,
     "Aluminio oxidado (0.15)": 0.15,
     "Impermeabilizante o pintura blanca nueva (0.15)": 0.15,
