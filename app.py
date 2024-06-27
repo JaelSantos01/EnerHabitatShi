@@ -44,7 +44,7 @@ app_ui = ui.page_sidebar(
         ui.navset_card_underline(
             ui.nav_panel("Temperaturas", output_widget("temperatura")),
             ui.nav_panel("Radiación", output_widget("radiacion")),
-            ui.nav_panel("Resultados", ui.output_text("pendiente")),
+            ui.nav_panel("Resultados", ui.output_text("resultados")),
             ui.nav_panel("Datos", ui.output_data_frame("get_day_data"),
             ui.download_button("downloadData", "Download")),
             ui.nav_panel("Documentacion", ui.output_text("documentacion")),
