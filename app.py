@@ -9,6 +9,7 @@ import asyncio
 from io import StringIO
 from datetime import date
 
+
 timezone = pytz.timezone('America/Mexico_City')
 app_dir = Path(__file__).parent
 
@@ -56,6 +57,8 @@ app_ui = ui.page_sidebar(
 )
 
 def server(input, output, session):
+    #info_modal()
+    
     @output
     @render.ui
     def left_controls():
@@ -120,8 +123,9 @@ def server(input, output, session):
             surface_azimuth,
             timezone
         )
-        
+
         fig = plot_T(dia)
+
         return fig
 
     @output
@@ -247,7 +251,6 @@ def server(input, output, session):
 
             await asyncio.sleep(0.25)
             yield csv_buffer.read()
-
 
 
 app = App(app_ui, server)

@@ -2,25 +2,7 @@ body {
   background-color: #dedede;
 }
 
-.card{
-  box-shadow: 2px 2px 7px rgb(160, 160, 160);
-  border-color: rgb(248, 248, 248);
-}
-
-.unique-card1 {
-  width: 90%;
-  align-content: center;
-  margin-left: 90px;
-}
-
-.unique-card {
-  width: 100%;
-  align-content: center;
-  margin-left: 130px;
-}
-
-.type{
-  width: 40%;
-  align-content: center;
-  margin-left: 200px;
+html, body, .container.fluid {
+  width: 100vw;
+  min-height: 100vh;
 }
