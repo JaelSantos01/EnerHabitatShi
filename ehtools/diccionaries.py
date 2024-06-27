@@ -13,22 +13,6 @@ meses_dict = {
     "Diciembre": "12",
 }
 
-location={
-    "Muro": 90,
-    "Techo": 0,
-}
-
-orientacion = {
-    "Norte": 0,
-    "Noreste": 45,
-    "Este": 90, 
-    "Sureste": 135, 
-    "Sur": 180,
-    "Suroeste": 225, 
-    "Oeste": 270, 
-    "Noroeste": 315,
-}
-
 Absortancia = {
     "Aluminio pulido": 0.10,
     "Aluminio oxidado": 0.15,
@@ -50,4 +34,20 @@ Absortancia = {
     "Impermeabilizante o pintura negra": 0.90,
     "Asfalto nuevo": 0.95,
     "Impermeabilizante o pintura negra mate nueva": 0.95,
+}
+
+location={
+    "Muro": 90,
+    "Techo": 0,
+}
+
+orientacion = {
+    "Norte": 0,
+    "Noreste": 45,
+    "Este": 90, 
+    "Sureste": 135, 
+    "Sur": 180,
+    "Suroeste": 225, 
+    "Oeste": 270, 
+    "Noroeste": 315,
 }
