@@ -41,8 +41,8 @@ app_ui = ui.page_sidebar(
         ),
     ),
         ui.navset_card_underline(
-            ui.nav_panel("Temperaturas", output_widget("grafica_mes")),
-            ui.nav_panel("Radiación", output_widget("grafica_duplicada")),
+            ui.nav_panel("Temperaturas", output_widget("temperatura")),
+            ui.nav_panel("Radiación", output_widget("radiacion")),
             ui.nav_panel("Resultados", ui.output_text("pendiente")),
             ui.nav_panel("Datos", ui.output_data_frame("get_day_data"),
             ui.download_button("downloadData", "Download")),
@@ -100,7 +100,7 @@ def server(input, output, session):
     
     @output
     @render_plotly
-    def grafica_mes():
+    def temperatura():
         place = input.place()
         ruta_epw = ruta(place)
         mes = meses_dict[input.periodo()]
@@ -126,7 +126,7 @@ def server(input, output, session):
 
     @output
     @render_plotly
-    def grafica_duplicada():
+    def radiacion():
         place = input.place()
         ruta_epw = ruta(place)
         mes = meses_dict[input.periodo()]
