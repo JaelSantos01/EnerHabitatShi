@@ -48,6 +48,7 @@ app_ui = ui.page_sidebar(
             ui.nav_panel("Datos", ui.output_data_frame("get_day_data"),
             ui.download_button("downloadData", "Download")),
             ui.nav_panel("Documentacion", ui.output_text("documentacion")),
+
             title="Datos Gráficados",
         ),
     
@@ -156,7 +157,7 @@ def server(input, output, session):
 
     @output
     @render.text
-    def pendiente():
+    def resultados():
         lugar = input.place()
         mes = input.periodo()
         ubicacion = input.ubicacion()
@@ -218,7 +219,6 @@ def server(input, output, session):
             data_to_show['Fecha_Hora'] = data_to_show['Fecha_Hora'].dt.strftime('%Y-%m-%d %H:%M:%S')
 
             return data_to_show 
-
 
     @render.download(
         filename=lambda: f"data-{date.today().isoformat()}.csv"
