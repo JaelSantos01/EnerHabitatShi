@@ -47,7 +47,7 @@ app_ui = ui.page_sidebar(
             ui.nav_panel("Resultados", ui.output_text("pendiente")),
             ui.nav_panel("Datos", ui.output_data_frame("get_day_data"),
             ui.download_button("downloadData", "Download")),
-            ui.nav_panel("Documentacion", ui.output_text("documentacion")),
+            ui.nav_panel("Documentacion", ui.output_ui("documentacion")),
 
             title="Datos Gráficados",
         ),
@@ -260,6 +260,27 @@ def server(input, output, session):
             await asyncio.sleep(0.25)
             yield csv_buffer.read()
 
+    @output
+    @render.ui
+    def documentacion():
+        modal_text = """
+            Respiratory Diseases App
+
+            Exploring Relationships between PM2.5 & Respiratory Diseases
+
+            ----------------------------------------
+
+            Problem Statement
+
+            Air Pollution has always been a problem for the world and over
+            the years, especially with the pandemic, the ambient air pollution
+            seems to be a slow burn for the entire population of the planet.
+            Through this app, we wish to explore the relationship between
+            the PM2.5 particulate metric and the Death Rate
+            (defined as deaths per 100,000) from respiratory
+            illnesses over the world over the years.
+            """
+        return modal_text
 
 app = App(app_ui, server)
 
