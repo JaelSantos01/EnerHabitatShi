@@ -8,7 +8,7 @@ from shinywidgets import output_widget, render_plotly
 import asyncio
 from io import StringIO
 from datetime import date
-from info.modal_run import info_modal
+from info.modal_run import *
 from info.documentacion import *
 
 timezone = pytz.timezone('America/Mexico_City')
@@ -59,8 +59,7 @@ app_ui = ui.page_sidebar(
 )
 
 def server(input, output, session):
-    
-    info_modal(True)
+    present_news(True)
     
     @output
     @render.ui

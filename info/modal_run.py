@@ -1,7 +1,7 @@
 from shiny.ui import modal_show, modal, modal_button
 from htmltools import TagList, tags
 
-def info_modal(show_modal):
+def present_news(show_modal):
     if show_modal:
         modal_show(
             modal(
@@ -29,4 +29,4 @@ def info_modal(show_modal):
                 easy_close=True,
                 footer=modal_button("Close"),
             )
-        )
+    )
