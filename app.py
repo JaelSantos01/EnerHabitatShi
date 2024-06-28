@@ -59,7 +59,8 @@ app_ui = ui.page_sidebar(
 )
 
 def server(input, output, session):
-    present_news(True)
+    #Visualizar modal 
+    present_news(False)
     
     @output
     @render.ui
