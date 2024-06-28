@@ -168,23 +168,23 @@ def server(input, output, session):
         sistemas = input.sistemas()
         condicion = input.Conditional()
         tipo = input.type()
-        e1 = input.espesor1()
-        m1 = input.material1()
-        e2 = input.espesor2()
-        m2 = input.material2()
-        e3 = input.espesor3()
-        m3 = input.material3()
-        e4 = input.espesor4()
-        m4 = input.material4()
-        e5 = input.espesor5()
-        m5 = input.material5()
+        L1 = input.espesor1()
+        material1 = input.material1()
+        L2 = input.espesor2()
+        material2 = input.material2()
+        L3 = input.espesor3()
+        material3 = input.material3()
+        L4 = input.espesor4()
+        material4 = input.material4()
+        L5 = input.espesor5()
+        material5 = input.material5()
         
         espesores = []
         materiales = []
         
         for i in range(1, sistemas + 1):
-            espesor = locals()[f"e{i}"]
-            material = locals()[f"m{i}"]
+            espesor = locals()[f"L{i}"]
+            material = locals()[f"material{i}"]
             espesores.append(espesor)
             materiales.append(material)
 
