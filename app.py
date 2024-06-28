@@ -59,7 +59,8 @@ app_ui = ui.page_sidebar(
 )
 
 def server(input, output, session):
-    #info_modal()
+    
+    info_modal(True)
     
     @output
     @render.ui
@@ -197,7 +198,6 @@ def server(input, output, session):
     @output
     @render.data_frame
     def get_day_data():
-            
             place = input.place()
             ruta_epw = ruta(place)  
             mes = meses_dict[input.periodo()]  
