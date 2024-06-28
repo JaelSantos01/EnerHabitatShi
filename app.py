@@ -58,7 +58,7 @@ app_ui = ui.page_sidebar(
 )
 
 def server(input, output, session):
-    info_modal()
+    #info_modal()
     
     @output
     @render.ui
@@ -196,6 +196,7 @@ def server(input, output, session):
     @output
     @render.data_frame
     def get_day_data():
+            
             place = input.place()
             ruta_epw = ruta(place)  
             mes = meses_dict[input.periodo()]  
@@ -203,14 +204,7 @@ def server(input, output, session):
             absortancia = Absortancia[input.absortancia()]  
             surface_tilt = location[input.ubicacion()] 
             surface_azimuth = orientacion[input.orientacion()]  
-            place = input.place()
-            ruta_epw = ruta(place)  
-            mes = meses_dict[input.periodo()]  
-            caracteristicas = cargar_caracteristicas(place)  
-            absortancia = Absortancia[input.abstrac()]  
-            surface_tilt = location[input.ubicacion()] 
-            surface_azimuth = orientacion[input.orientacion()]  
-
+        
             result = data_frame(
                 ruta_epw,
                 caracteristicas['lat'],
@@ -222,10 +216,10 @@ def server(input, output, session):
                 surface_azimuth,
                 timezone
             )
-
+            
             data_to_show = result[::3600].reset_index() 
             data_to_show['Fecha_Hora'] = data_to_show['Fecha_Hora'].dt.strftime('%Y-%m-%d %H:%M:%S')
-
+            
             return data_to_show 
 
     @render.download(
