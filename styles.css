@@ -6,3 +6,7 @@ html, body, .container.fluid {
   width: 100vw;
   min-height: 100vh;
 }
+
+#absortancia{
+  font-size: 14.5px;
+}
