@@ -9,6 +9,7 @@ import asyncio
 from io import StringIO
 from datetime import date
 from info.modal_run import info_modal
+from info.documentacion import *
 
 timezone = pytz.timezone('America/Mexico_City')
 app_dir = Path(__file__).parent
@@ -47,7 +48,7 @@ app_ui = ui.page_sidebar(
             ui.nav_panel("Resultados", ui.output_text("resultados")),
             ui.nav_panel("Datos", ui.output_data_frame("get_day_data"),
             ui.download_button("downloadData", "Download")),
-            ui.nav_panel("Documentacion", ui.output_text("documentacion")),
+            ui.nav_panel("Documentacion", ui.output_ui("documentacion")),
 
             title="Datos Gráficados",
         ),
@@ -58,7 +59,7 @@ app_ui = ui.page_sidebar(
 )
 
 def server(input, output, session):
-    info_modal()
+    #info_modal()
     
     @output
     @render.ui
@@ -196,6 +197,7 @@ def server(input, output, session):
     @output
     @render.data_frame
     def get_day_data():
+            
             place = input.place()
             ruta_epw = ruta(place)  
             mes = meses_dict[input.periodo()]  
@@ -218,7 +220,7 @@ def server(input, output, session):
             
             data_to_show = result[::3600].reset_index() 
             data_to_show['Fecha_Hora'] = data_to_show['Fecha_Hora'].dt.strftime('%Y-%m-%d %H:%M:%S')
-
+            
             return data_to_show 
 
     @render.download(
@@ -253,6 +255,10 @@ def server(input, output, session):
             await asyncio.sleep(0.25)
             yield csv_buffer.read()
 
+    @output
+    @render.ui
+    def documentacion():
+        return respiratory_diseases_app()
 
 app = App(app_ui, server)
 
