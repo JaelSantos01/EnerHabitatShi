@@ -9,6 +9,7 @@ import asyncio
 from io import StringIO
 from datetime import date
 from info.modal_run import info_modal
+from info.documentacion import *
 
 timezone = pytz.timezone('America/Mexico_City')
 app_dir = Path(__file__).parent
@@ -257,24 +258,7 @@ def server(input, output, session):
     @output
     @render.ui
     def documentacion():
-        modal_text = """
-            Respiratory Diseases App
-
-            Exploring Relationships between PM2.5 & Respiratory Diseases
-
-            ----------------------------------------
-
-            Problem Statement
-
-            Air Pollution has always been a problem for the world and over
-            the years, especially with the pandemic, the ambient air pollution
-            seems to be a slow burn for the entire population of the planet.
-            Through this app, we wish to explore the relationship between
-            the PM2.5 particulate metric and the Death Rate
-            (defined as deaths per 100,000) from respiratory
-            illnesses over the world over the years.
-            """
-        return modal_text
+        return respiratory_diseases_app()
 
 app = App(app_ui, server)
 
