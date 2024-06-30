@@ -221,3 +221,10 @@ def data_frame(f_epw, lat, lon, altitude, month, absortance, surface_tilt, surfa
     solar_position.index = date_range
     
     return solar_position
+
+
+def calculate_Tfree_1D(dia):
+    dia["Ti"] = dia.Tsa * 0.8 + np.random.random_sample()
+    dia["Tse"] = dia.Tsa * 0.8 + np.random.random_sample()
+    dia["Tsi"] = dia.Tsa * 0.8 + np.random.random_sample()
+    return dia

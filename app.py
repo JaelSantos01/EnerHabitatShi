@@ -60,7 +60,7 @@ app_ui = ui.page_sidebar(
 
 def server(input, output, session):
     #Visualizar modal 
-    present_news(False)
+    present_news(True)
     
     @output
     @render.ui
@@ -126,8 +126,8 @@ def server(input, output, session):
             surface_azimuth,
             timezone
         )
-
-        fig = plot_T(dia)
+        dia = calculate_Tfree_1D(dia)
+        fig = plot_T_x(dia)
 
         return fig
 

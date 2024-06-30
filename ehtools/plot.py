@@ -1,5 +1,7 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import plotly.express as px
+
 
 
 def plot_T_I(dia):
@@ -76,4 +78,53 @@ def plot_I(dia):
     fig.update_yaxes(title_text="Irradiancia [W/m²]", row=1, col=1)
 
     # Mostrar figura
+    return fig
+
+
+def plot_T_x(dia):
+    
+    df = dia.reset_index()
+
+    fig = px.line(df,x="index",y=["Tsa","Ta","Ti"])
+    fig.add_trace(go.Scatter(
+                            x=df["index"], 
+                            y=df['Tn'] + df['DeltaTn'], 
+                            mode='lines',
+                            showlegend=False , 
+                            line=dict(color='rgba(0,0,0,0)')
+                            )
+    )
+
+    fig.add_trace(go.Scatter(
+                            x=df["index"], 
+                            y=df['Tn'] -df['DeltaTn'], 
+                            mode='lines',
+                            showlegend=False , 
+                            fill='tonexty',
+                            line=dict(color='rgba(0,0,0,0)'),
+                            fillcolor='rgba(0,255,0,0.3)'
+                            )
+    )
+
+# Personalizar el layout
+
+    fig.update_layout(
+        yaxis_title='Temperatura (°C)',
+        legend_title='',  # Quitar el título de la leyenda
+        xaxis_title=''
+    )
+    return fig
+
+
+
+def plot_I_x(dia):
+    df = dia.reset_index()
+    fig = px.line(df,x="index",y=["Ig","Ib","Id","Is"])
+
+# Personalizar el layout
+    fig.update_layout(
+        yaxis_title='Temp ($^oC$)',
+        legend_title='',  # Quitar el título de la leyenda
+        xaxis_title=''
+    )
     return fig
